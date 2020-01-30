@@ -10,6 +10,17 @@ import Gui
 import Html exposing (Html)
 import Html.Events as Events
 
+
+palette =
+    { gray = Element.rgb255 48 48 48
+    , grayLight = Element.rgb255 57 57 57
+    , yellow = Element.rgb255 170 117 57
+    , red = Element.rgb255 162 54 69
+    , blue = Element.rgb255 39 86 107
+    , green = Element.rgb255 71 144 48
+    }
+
+
 type alias Model =
     { float : Gui.Slider
     , string : Gui.Textbox
@@ -72,14 +83,32 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    Element.layout [] (gui model)
+    Element.layout
+        [ Element.inFront <| gui model ]
+        (sandbox model)
 
 
 gui : Model -> Element Msg
 gui model =
-    Element.column []
+    Element.column
+        [ Background.color palette.grayLight
+        , Element.alignRight
+        , Element.padding 20
+        , Element.spacing 20
+        ]
         [ Gui.slider model.float NewFloat
         , Gui.checkbox model.bool NewBool
         , Gui.textbox model.string NewString
         , Gui.action Action
         ]
+
+
+sandbox : Model -> Element Msg
+sandbox _ =
+    Element.el
+        [ Background.color palette.gray
+        , Element.width Element.fill
+        , Element.height Element.fill
+        , Element.padding 20
+        ]
+        (Element.text "Sandbox Region")
