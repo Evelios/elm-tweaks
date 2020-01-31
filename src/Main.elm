@@ -9,16 +9,7 @@ import Element.Input as Input
 import Gui
 import Html exposing (Html)
 import Html.Events as Events
-
-
-palette =
-    { gray = Element.rgb255 48 48 48
-    , grayLight = Element.rgb255 57 57 57
-    , yellow = Element.rgb255 170 117 57
-    , red = Element.rgb255 162 54 69
-    , blue = Element.rgb255 39 86 107
-    , green = Element.rgb255 71 144 48
-    }
+import Palette
 
 
 type alias Model =
@@ -91,7 +82,7 @@ view model =
 gui : Model -> Element Msg
 gui model =
     Element.column
-        [ Background.color palette.grayLight
+        [ Background.color Palette.colors.grayLight
         , Element.alignRight
         , Element.padding 20
         , Element.spacing 20
@@ -105,10 +96,38 @@ gui model =
 
 sandbox : Model -> Element Msg
 sandbox _ =
-    Element.el
-        [ Background.color palette.gray
-        , Element.width Element.fill
-        , Element.height Element.fill
-        , Element.padding 20
-        ]
-        (Element.text "Sandbox Region")
+    let
+        background =
+            Element.row
+                [ Background.color Palette.colors.gray
+                , Element.width Element.fill
+                , Element.height Element.fill
+                , Element.padding 20
+                ]
+                [ buffer
+                , canvas
+                , buffer
+                ]
+
+        canvas =
+            Element.el
+                [ Background.color Palette.colors.grayLight
+                , Element.width <| Element.fillPortion 7
+                , Element.height Element.fill
+                , Border.shadow
+                    { offset = (0.0, 0.0)
+                    , size = 10
+                    , blur = 10
+                    , color = Palette.colors.yellow
+                    }
+                ]
+                (Element.text "Sandbox Region")
+
+        buffer =
+            Element.el
+                [ Element.width <| Element.fillPortion 1
+                ]
+                Element.none
+    in
+    background
+
