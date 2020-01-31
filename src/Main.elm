@@ -20,6 +20,7 @@ type alias Model =
     { float : Gui.Slider
     , string : Gui.Textbox
     , bool : Gui.Checkbox
+    , toggle : Bool
     , size : Size
     }
 
@@ -28,6 +29,7 @@ type Msg
     = NewFloat Float
     | NewBool Bool
     | NewString String
+    | GuiToggle
     | Action
     | GotViewport Browser.Dom.Viewport
     | WindowResize Size
@@ -64,6 +66,7 @@ init _ =
             , value = ""
             , placeholder = "Default Text"
             }
+        , toggle = True
         , size = (0.0, 0.0)
         }
     , Task.perform GotViewport Browser.Dom.getViewport
@@ -81,6 +84,9 @@ update msg model =
 
         NewString value ->
             ({ model | string = Gui.setTextboxValue value model.string }, Cmd.none)
+
+        GuiToggle ->
+            ({ model | toggle = not model.toggle }, Cmd.none)
 
         Action ->
             (model, Cmd.none)
@@ -106,19 +112,28 @@ view model =
 
 gui : Model -> Element Msg
 gui model =
+    let
+        toggle = Gui.toggle GuiToggle
+
+        guiElements =
+            if model.toggle then
+                [ Gui.slider model.float NewFloat
+                , Gui.checkbox model.bool NewBool
+                , Gui.textbox model.string NewString
+                , Gui.action Action
+                ]
+            else
+                []
+    in
     Element.column
-        [ Background.color Palette.colors.backgroundDark
+        [ Background.color Palette.colors.backgroundDarkAccent
         , Element.alignRight
         , Element.padding Palette.padding.default
         , Element.spacing Palette.spacing.default
         , Font.color Palette.colors.foreground
-        , Element.below (Gui.toggle Action)
+        , Element.below toggle
         ]
-        [ Gui.slider model.float NewFloat
-        , Gui.checkbox model.bool NewBool
-        , Gui.textbox model.string NewString
-        , Gui.action Action
-        ]
+        guiElements
 
 
 sandbox : Model -> Element Msg

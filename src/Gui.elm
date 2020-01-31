@@ -144,7 +144,7 @@ action msg =
 toggle : msg -> Element msg
 toggle msg =
     Input.button
-        [ Background.color Palette.colors.backgroundDarkAccent
+        [ Background.color Palette.colors.backgroundDark
         , Element.width Element.fill
         , Element.padding Palette.sizing.default
         , Element.focused
