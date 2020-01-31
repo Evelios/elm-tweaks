@@ -1,14 +1,14 @@
 module Gui exposing
-    ( Slider
+    ( Checkbox
+    , Slider
     , Textbox
-    , Checkbox
-    , slider
-    , checkbox
-    , textbox
     , action
+    , checkbox
+    , setCheckboxValue
     , setSliderValue
     , setTextboxValue
-    , setCheckboxValue
+    , slider
+    , textbox
     )
 
 import Element exposing (Element)
@@ -16,6 +16,8 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
+import Palette
+
 
 type alias Slider =
     { label : String
@@ -64,51 +66,86 @@ red =
 
 slider : Slider -> (Float -> msg) -> Element msg
 slider { label, value, min, max, step } toMsg =
-    Input.slider
-    [ Element.height (Element.px 30)
-    , Element.behindContent
-        (Element.el
-            [ Element.width Element.fill
-            , Element.height (Element.px 2)
-            , Element.centerY
-            , Background.color red
-            , Border.rounded 2
-            ]
-            Element.none
-        )
-    ]
-    { onChange = toMsg
-    , label = Input.labelLeft [ Element.centerY ] <| Element.text label
-    , min = min
-    , max = max
-    , step = step
-    , value = value
-    , thumb = Input.defaultThumb
-    }
+    let
+        input =
+            Input.slider
+                [ Element.spacing Palette.spacing.default
+                , Element.height (Element.px Palette.sizing.default)
+                , Element.width Element.fill
+                , Element.behindContent
+                    (Element.el
+                        [ Element.width Element.fill
+                        , Element.height Element.fill
+                        , Element.centerY
+                        , Background.color red
+                        , Border.rounded Palette.sizing.xsmall
+                        ]
+                        Element.none
+                    )
+                ]
+                { onChange = toMsg
+                , label = Input.labelLeft [ Element.centerY ] <| Element.text label
+                , min = min
+                , max = max
+                , step = step
+                , value = value
+                , thumb =
+                    Input.thumb
+                        [ Element.height Element.fill
+                        , Element.width (Element.px Palette.padding.default)
+                        , Element.alignLeft
+                        , Border.rounded Palette.sizing.xsmall
+                        , Background.color green
+                        ]
+                }
+
+        result =
+            Element.el []
+                (Element.text <| String.fromInt <| round value)
+    in
+    Element.row
+        [ Element.width Element.fill
+        , Element.spacing Palette.spacing.default
+        ]
+        [ input
+        , result
+        ]
 
 
 checkbox : Checkbox -> (Bool -> msg) -> Element msg
 checkbox { label, value } toMsg =
-    Input.checkbox []
+    Input.checkbox
+        [ Element.spacing 20
+        ]
         { onChange = toMsg
         , icon = Input.defaultCheckbox
         , checked = value
-        , label = Input.labelLeft [] <| Element.text label
+        , label =
+            Input.labelLeft [] (Element.text label)
         }
 
+
 textbox : Textbox -> (String -> msg) -> Element msg
-textbox { label, value, placeholder }  toMsg =
-    Input.text []
+textbox { label, value, placeholder } toMsg =
+    Input.text
+        [ Element.spacing 20
+        ]
         { onChange = toMsg
         , text = value
         , placeholder = Just <| Input.placeholder [ Element.centerY ] <| Element.text placeholder
-        , label = Input.labelLeft [ Element.centerY ] <| Element.text "Label"
+        , label =
+            Input.labelLeft
+                [ Element.centerY ]
+                (Element.text "Label")
         }
+
 
 action : msg -> Element msg
 action msg =
     Input.button
-        [ Background.color green
+        [ Element.padding Palette.sizing.default
+        , Background.color green
+        , Border.rounded Palette.sizing.xsmall
         , Element.focused
             [ Background.color red ]
         ]
