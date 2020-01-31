@@ -9,6 +9,7 @@ module Gui exposing
     , setTextboxValue
     , slider
     , textbox
+    , toggle
     )
 
 import Element exposing (Element)
@@ -56,14 +57,6 @@ setCheckboxValue value model =
     { model | value = value }
 
 
-green =
-    Element.rgb255 50 168 82
-
-
-red =
-    Element.rgb255 219 70 102
-
-
 slider : Slider -> (Float -> msg) -> Element msg
 slider { label, value, min, max, step } toMsg =
     let
@@ -77,14 +70,14 @@ slider { label, value, min, max, step } toMsg =
                         [ Element.width Element.fill
                         , Element.height Element.fill
                         , Element.centerY
-                        , Background.color red
+                        , Background.color Palette.colors.red
                         , Border.rounded Palette.sizing.xsmall
                         ]
                         Element.none
                     )
                 ]
                 { onChange = toMsg
-                , label = Input.labelLeft [ Element.centerY ] <| Element.text label
+                , label = Input.labelLeft [ Element.centerY ] (Element.text label)
                 , min = min
                 , max = max
                 , step = step
@@ -95,13 +88,11 @@ slider { label, value, min, max, step } toMsg =
                         , Element.width (Element.px Palette.padding.default)
                         , Element.alignLeft
                         , Border.rounded Palette.sizing.xsmall
-                        , Background.color green
+                        , Background.color Palette.colors.green
                         ]
                 }
 
-        result =
-            Element.el []
-                (Element.text <| String.fromInt <| round value)
+        result = Element.el [] (Element.text <| String.fromInt <| round value)
     in
     Element.row
         [ Element.width Element.fill
@@ -120,8 +111,7 @@ checkbox { label, value } toMsg =
         { onChange = toMsg
         , icon = Input.defaultCheckbox
         , checked = value
-        , label =
-            Input.labelLeft [] (Element.text label)
+        , label = Input.labelLeft [ Element.centerY ] (Element.text label)
         }
 
 
@@ -134,9 +124,7 @@ textbox { label, value, placeholder } toMsg =
         , text = value
         , placeholder = Just <| Input.placeholder [ Element.centerY ] <| Element.text placeholder
         , label =
-            Input.labelLeft
-                [ Element.centerY ]
-                (Element.text "Label")
+            Input.labelLeft [ Element.centerY ] (Element.text "Label")
         }
 
 
@@ -144,11 +132,24 @@ action : msg -> Element msg
 action msg =
     Input.button
         [ Element.padding Palette.sizing.default
-        , Background.color green
+        , Background.color Palette.colors.green
         , Border.rounded Palette.sizing.xsmall
         , Element.focused
-            [ Background.color red ]
+            [ Background.color Palette.colors.red ]
         ]
         { onPress = Just msg
         , label = Element.text "Button"
+        }
+
+toggle : msg -> Element msg
+toggle msg =
+    Input.button
+        [ Background.color Palette.colors.backgroundDarkAccent
+        , Element.width Element.fill
+        , Element.padding Palette.sizing.default
+        , Element.focused
+            [ Background.color Palette.colors.backgroundAccent ]
+        ]
+        { onPress = Just msg
+        , label = Element.text "Toggle"
         }
