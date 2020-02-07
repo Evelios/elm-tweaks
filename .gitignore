@@ -1,6 +1,6 @@
 # Elm Stuff
 elm-stuff/
-*.html
+*.js
 
 # User Stuff
 *.swp

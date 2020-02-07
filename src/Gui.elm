@@ -92,7 +92,8 @@ slider { label, value, min, max, step } toMsg =
                         ]
                 }
 
-        result = Element.el [] (Element.text <| String.fromInt <| round value)
+        result =
+            Element.el [] (Element.text <| String.fromInt <| round value)
     in
     Element.row
         [ Element.width Element.fill
@@ -128,8 +129,8 @@ textbox { label, value, placeholder } toMsg =
         }
 
 
-action : msg -> Element msg
-action msg =
+action : String -> msg -> Element msg
+action label msg =
     Input.button
         [ Element.padding Palette.sizing.default
         , Background.color Palette.colors.green
@@ -138,8 +139,9 @@ action msg =
             [ Background.color Palette.colors.red ]
         ]
         { onPress = Just msg
-        , label = Element.text "Button"
+        , label = Element.text label
         }
+
 
 toggle : msg -> Element msg
 toggle msg =
