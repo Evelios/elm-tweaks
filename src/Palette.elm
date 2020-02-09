@@ -4,7 +4,12 @@ import Element exposing (rgb255)
 
 
 colors =
-    { backgroundDark = rgb255 20 20 20
+    { background =
+        { default = rgb255 20 20 20
+        , accent = rgb255 65 65 65
+        , light = rgb255 57 57 57
+        }
+    , backgroundDark = rgb255 20 20 20
     , backgroundDarkAccent = rgb255 32 32 32
     , backgroundLight = rgb255 57 57 57
     , backgroundAccent = rgb255 65 65 65
@@ -30,8 +35,8 @@ spacing =
 
 
 sizing =
-    { xlarge = 40
-    , large = 20
-    , default = 10
-    , xsmall = 5
+    { xlarge = Element.px 160
+    , large = Element.px 80
+    , default = Element.px 40
+    , xsmall = Element.px 20
     }

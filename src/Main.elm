@@ -15,7 +15,6 @@ import Html.Attributes
 import Palette
 import Svg exposing (Svg)
 import Svg.Attributes
-import Svg.String
 import Task
 
 
@@ -27,6 +26,7 @@ port gotSvg : (String -> msg) -> Sub msg
 
 type alias Model =
     { size : Size
+    , fileName : String
     }
 
 
@@ -35,6 +35,7 @@ type Msg
     | GotSvg String
     | GotViewport Browser.Dom.Viewport
     | WindowResize Size
+    | NewFileName String
 
 
 type alias Size =
@@ -53,7 +54,9 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { size = ( 0.0, 0.0 ) }
+    ( { size = ( 0.0, 0.0 )
+      , fileName = "canvas"
+      }
     , Task.perform GotViewport Browser.Dom.getViewport
     )
 
@@ -68,17 +71,20 @@ update msg model =
             ( { model | size = size }, Cmd.none )
 
         GetSvg ->
-            Debug.log "Get Svg"
-                ( model, getSvg "canvas" )
+            ( model, getSvg "canvas" )
 
         GotSvg output ->
-            Debug.log "Got Svg"
-                ( model, download output )
+            ( model, download model.fileName output )
+
+        NewFileName fileName ->
+            ( { model | fileName = fileName }
+            , Cmd.none
+            )
 
 
-download : String -> Cmd msg
-download svg =
-    Download.string "Sandbox.svg" "image/svg+xml" svg
+download : String -> String -> Cmd msg
+download fileName svg =
+    Download.string (String.append fileName ".svg") "image/svg+xml" svg
 
 
 subscriptions : model -> Sub Msg
@@ -92,20 +98,37 @@ subscriptions _ =
 view : Model -> Html Msg
 view model =
     Element.layout
-        [ Element.inFront <| gui model ]
-        (sandbox model)
+        [ Element.width Element.fill
+        , Element.height Element.fill
+        ]
+        (Element.column
+            [ Element.width Element.fill
+            , Element.height Element.fill
+            ]
+            [ gui model
+            , sandbox model
+            ]
+        )
 
 
 gui : Model -> Element Msg
 gui model =
-    Element.column
-        [ Background.color Palette.colors.backgroundDarkAccent
-        , Element.alignRight
-        , Element.padding Palette.padding.default
-        , Element.spacing Palette.spacing.default
+    Element.row
+        [ Background.color Palette.colors.backgroundDark
+        , Element.width Element.fill
         , Font.color Palette.colors.foreground
         ]
-        [ Gui.action "Download Svg" GetSvg
+        [ Gui.imageButton
+            { src = "img/download.svg"
+            , description = "Download"
+            }
+            GetSvg
+        , Gui.textbox
+            { label = "File Name"
+            , placeholder = "my_drawing"
+            , value = model.fileName
+            }
+            NewFileName
         ]
 
 
