@@ -3,6 +3,7 @@ port module Main exposing (main)
 import Browser
 import Browser.Dom
 import Browser.Events
+import Dict exposing (Dict)
 import Element exposing (Element)
 import Element.Background as Background
 import Element.Border as Border
@@ -12,7 +13,9 @@ import File.Download as Download
 import Gui
 import Html exposing (Html)
 import Html.Attributes
+import Length exposing (Meters)
 import Palette
+import Size exposing (AspectRatio, Size)
 import Svg exposing (Svg)
 import Svg.Attributes
 import Task
@@ -25,8 +28,12 @@ port gotSvg : (String -> msg) -> Sub msg
 
 
 type alias Model =
-    { size : Size
+    { width : Float
+    , height : Float
+    , inputWidth : String
+    , inputHeight : String
     , fileName : String
+    , paperSize : Size Meters
     }
 
 
@@ -34,12 +41,20 @@ type Msg
     = GetSvg
     | GotSvg String
     | GotViewport Browser.Dom.Viewport
-    | WindowResize Size
+    | WindowResize ( Float, Float )
     | NewFileName String
+    | NewWidth String
+    | NewHeight String
+    | NewPaperSize (Size Meters)
 
 
-type alias Size =
-    ( Float, Float )
+paperSizes : Dict String (Size Meters)
+paperSizes =
+    Dict.fromList
+        [ ( "A4", Size.size (Length.millimeters 210) (Length.millimeters 297) )
+        , ( "A3", Size.size (Length.millimeters 297) (Length.millimeters 420) )
+        , ( "Letter", Size.size (Length.inches 8.5) (Length.inches 11) )
+        ]
 
 
 main : Program () Model Msg
@@ -54,8 +69,12 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { size = ( 0.0, 0.0 )
+    ( { width = 0
+      , height = 0
+      , inputWidth = "0"
+      , inputHeight = "0"
       , fileName = "canvas"
+      , paperSize = Size.size (Length.inches 8.5) (Length.inches 11)
       }
     , Task.perform GotViewport Browser.Dom.getViewport
     )
@@ -65,10 +84,24 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         GotViewport { scene, viewport } ->
-            ( { model | size = ( viewport.width, viewport.height ) }, Cmd.none )
+            ( { model
+                | width = viewport.width
+                , height = viewport.height
+                , inputWidth = String.fromInt <| round <| viewport.width
+                , inputHeight = String.fromInt <| round <| viewport.height
+              }
+            , Cmd.none
+            )
 
-        WindowResize size ->
-            ( { model | size = size }, Cmd.none )
+        WindowResize ( width, height ) ->
+            ( { model
+                | width = width
+                , height = height
+                , inputWidth = String.fromInt <| round <| width
+                , inputHeight = String.fromInt <| round <| height
+              }
+            , Cmd.none
+            )
 
         GetSvg ->
             ( model, getSvg "canvas" )
@@ -80,6 +113,35 @@ update msg model =
             ( { model | fileName = fileName }
             , Cmd.none
             )
+
+        NewWidth textWidth ->
+            case String.toFloat textWidth of
+                Just width ->
+                    ( { model
+                        | width = width
+                        , inputWidth = textWidth
+                      }
+                    , Cmd.none
+                    )
+
+                Nothing ->
+                    ( { model | inputWidth = textWidth }, Cmd.none )
+
+        NewHeight textHeight ->
+            case String.toFloat textHeight of
+                Just height ->
+                    ( { model
+                        | height = height
+                        , inputHeight = textHeight
+                      }
+                    , Cmd.none
+                    )
+
+                Nothing ->
+                    ( { model | inputHeight = textHeight }, Cmd.none )
+
+        NewPaperSize size ->
+            ( { model | paperSize = size }, Cmd.none )
 
 
 download : String -> String -> Cmd msg
@@ -114,9 +176,9 @@ view model =
 gui : Model -> Element Msg
 gui model =
     Element.row
-        [ Background.color Palette.colors.backgroundDark
+        [ Background.color Palette.colors.background.default
         , Element.width Element.fill
-        , Font.color Palette.colors.foreground
+        , Font.color Palette.colors.foreground.default
         ]
         [ Gui.imageButton
             { src = "img/download.svg"
@@ -129,6 +191,26 @@ gui model =
             , value = model.fileName
             }
             NewFileName
+        , Gui.image
+            { src = "img/width.svg"
+            , description = "Width"
+            }
+        , Gui.textbox
+            { label = "px"
+            , placeholder = "Width"
+            , value = model.inputWidth
+            }
+            NewWidth
+        , Gui.image
+            { src = "img/height.svg"
+            , description = "Height"
+            }
+        , Gui.textbox
+            { label = "px"
+            , placeholder = "Height"
+            , value = model.inputHeight
+            }
+            NewHeight
         ]
 
 
@@ -136,11 +218,11 @@ sandbox : Model -> Element Msg
 sandbox model =
     let
         ( width, height ) =
-            canvasSize model.size
+            canvasSize model.width model.height
 
         background =
             Element.el
-                [ Background.color Palette.colors.backgroundLight
+                [ Background.color Palette.colors.background.light
                 , Element.width Element.fill
                 , Element.height Element.fill
                 ]
@@ -152,8 +234,8 @@ sandbox model =
                 , Element.htmlAttribute <| Html.Attributes.id "canvas"
                 , Element.centerX
                 , Element.centerY
-                , Element.width <| Element.px <| width
-                , Element.height <| Element.px <| height
+                , Element.width <| Element.px width
+                , Element.height <| Element.px height
                 , Border.shadow
                     { offset = ( 0.0, 0.0 )
                     , size = 10
@@ -161,13 +243,13 @@ sandbox model =
                     , color = Palette.colors.black
                     }
                 ]
-                (Element.html <| drawing ( width, height ))
+                (Element.html <| drawing <| canvasSize model.width model.height)
     in
     background
 
 
-canvasSize : ( Float, Float ) -> ( Int, Int )
-canvasSize ( width, height ) =
+canvasSize : Float -> Float -> ( Int, Int )
+canvasSize width height =
     let
         inset =
             0.8

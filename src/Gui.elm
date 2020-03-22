@@ -1,5 +1,6 @@
 module Gui exposing
-    ( imageButton
+    ( image
+    , imageButton
     , textbox
     )
 
@@ -32,13 +33,23 @@ textbox { label, value, placeholder } toMsg =
         }
 
 
-type alias ImageButton =
+type alias Image =
     { src : String
     , description : String
     }
 
 
-imageButton : ImageButton -> msg -> Element msg
+image : Image -> Element msg
+image { src, description } =
+    Element.image
+        [ Element.width Palette.sizing.default
+        ]
+        { src = src
+        , description = description
+        }
+
+
+imageButton : Image -> msg -> Element msg
 imageButton { src, description } msg =
     Element.image
         [ Events.onClick msg

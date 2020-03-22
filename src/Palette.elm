@@ -9,12 +9,10 @@ colors =
         , accent = rgb255 65 65 65
         , light = rgb255 57 57 57
         }
-    , backgroundDark = rgb255 20 20 20
-    , backgroundDarkAccent = rgb255 32 32 32
-    , backgroundLight = rgb255 57 57 57
-    , backgroundAccent = rgb255 65 65 65
-    , foreground = rgb255 255 215 170
-    , foregroundAccent = rgb255 213 162 106
+    , foreground =
+        { default = rgb255 255 215 170
+        , accent = rgb255 213 162 106
+        }
     , yellow = rgb255 170 117 57
     , red = rgb255 162 54 69
     , blue = rgb255 39 86 107
