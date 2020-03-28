@@ -1,5 +1,6 @@
 module Tests exposing (suite)
 
+import AspectRatio
 import Expect
 import Length
 import Pixels
@@ -33,9 +34,9 @@ suite =
                             Size.size (Pixels.pixels 100) (Pixels.pixels 150)
 
                         aspectRatio =
-                            Size.aspectRatio 1 1.5
+                            AspectRatio.aspectRatio 1 1.5
                     in
-                    Size.asAspectRatio size
+                    AspectRatio.fromSize size
                         |> Expect.equal aspectRatio
             , test "Aspect ratio from landscape size" <|
                 \_ ->
@@ -44,9 +45,9 @@ suite =
                             Size.size (Pixels.pixels 150) (Pixels.pixels 100)
 
                         aspectRatio =
-                            Size.aspectRatio 1.5 1
+                            AspectRatio.aspectRatio 1.5 1
                     in
-                    Size.asAspectRatio size
+                    AspectRatio.fromSize size
                         |> Expect.equal aspectRatio
             ]
         , describe "inAspectRatio"
@@ -57,12 +58,12 @@ suite =
                             Size.size (Pixels.pixels 200) (Pixels.pixels 200)
 
                         aspectRatio =
-                            Size.aspectRatio 1 2
+                            AspectRatio.aspectRatio 1 2
 
                         expected =
                             Size.size (Pixels.pixels 100) (Pixels.pixels 200)
                     in
-                    Size.inAspectRatio aspectRatio size
+                    AspectRatio.inAspectRatio aspectRatio size
                         |> Expect.equal expected
             , test "Landscape from square" <|
                 \_ ->
@@ -71,12 +72,12 @@ suite =
                             Size.size (Pixels.pixels 200) (Pixels.pixels 200)
 
                         aspectRatio =
-                            Size.aspectRatio 2 1
+                            AspectRatio.aspectRatio 2 1
 
                         expected =
                             Size.size (Pixels.pixels 200) (Pixels.pixels 100)
                     in
-                    Size.inAspectRatio aspectRatio size
+                    AspectRatio.inAspectRatio aspectRatio size
                         |> Expect.equal expected
             , test "Landscape to portrait" <|
                 \_ ->
@@ -85,12 +86,12 @@ suite =
                             Size.size (Pixels.pixels 200) (Pixels.pixels 100)
 
                         aspectRatio =
-                            Size.aspectRatio 1 2
+                            AspectRatio.aspectRatio 1 2
 
                         expected =
                             Size.size (Pixels.pixels 50) (Pixels.pixels 100)
                     in
-                    Size.inAspectRatio aspectRatio size
+                    AspectRatio.inAspectRatio aspectRatio size
                         |> Expect.equal expected
             , test "Portrait to landscape" <|
                 \_ ->
@@ -99,12 +100,12 @@ suite =
                             Size.size (Pixels.pixels 100) (Pixels.pixels 200)
 
                         aspectRatio =
-                            Size.aspectRatio 2 1
+                            AspectRatio.aspectRatio 2 1
 
                         expected =
                             Size.size (Pixels.pixels 100) (Pixels.pixels 50)
                     in
-                    Size.inAspectRatio aspectRatio size
+                    AspectRatio.inAspectRatio aspectRatio size
                         |> Expect.equal expected
             , test "Non-normalized aspect ratio portrait to landscape" <|
                 \_ ->
@@ -113,12 +114,12 @@ suite =
                             Size.size (Pixels.pixels 300) (Pixels.pixels 400)
 
                         aspectRatio =
-                            Size.aspectRatio 3 2
+                            AspectRatio.aspectRatio 3 2
 
                         expected =
                             Size.size (Pixels.pixels 300) (Pixels.pixels 200)
                     in
-                    Size.inAspectRatio aspectRatio size
+                    AspectRatio.inAspectRatio aspectRatio size
                         |> Expect.equal expected
             , test "Non-normalized aspect ratio landscape to portrait" <|
                 \_ ->
@@ -127,12 +128,12 @@ suite =
                             Size.size (Pixels.pixels 400) (Pixels.pixels 300)
 
                         aspectRatio =
-                            Size.aspectRatio 2 3
+                            AspectRatio.aspectRatio 2 3
 
                         expected =
                             Size.size (Pixels.pixels 200) (Pixels.pixels 300)
                     in
-                    Size.inAspectRatio aspectRatio size
+                    AspectRatio.inAspectRatio aspectRatio size
                         |> Expect.equal expected
             ]
         ]

@@ -1,5 +1,6 @@
 port module Main exposing (main)
 
+import AspectRatio exposing (AspectRatio)
 import Browser
 import Browser.Dom
 import Browser.Events
@@ -16,8 +17,9 @@ import Html.Attributes
 import Length exposing (Meters)
 import Palette
 import Picture
-import Pixels
-import Size exposing (AspectRatio, Size)
+import Pixels exposing (Pixels)
+import Quantity
+import Size exposing (Size)
 import Svg exposing (Svg)
 import Svg.Attributes
 import Task
@@ -30,8 +32,7 @@ port gotSvg : (String -> msg) -> Sub msg
 
 
 type alias Model =
-    { width : Float
-    , height : Float
+    { view : Size Pixels
     , inputWidth : String
     , inputHeight : String
     , fileName : String
@@ -71,8 +72,7 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { width = 0
-      , height = 0
+    ( { view = Size.size (Pixels.pixels 0) (Pixels.pixels 0)
       , inputWidth = "0"
       , inputHeight = "0"
       , fileName = "canvas"
@@ -87,8 +87,10 @@ update msg model =
     case msg of
         GotViewport { scene, viewport } ->
             ( { model
-                | width = viewport.width
-                , height = viewport.height
+                | view =
+                    Size.size
+                        (Pixels.pixels viewport.width)
+                        (Pixels.pixels viewport.height)
                 , inputWidth = String.fromInt <| round <| viewport.width
                 , inputHeight = String.fromInt <| round <| viewport.height
               }
@@ -97,8 +99,10 @@ update msg model =
 
         WindowResize ( width, height ) ->
             ( { model
-                | width = width
-                , height = height
+                | view =
+                    Size.size
+                        (Pixels.pixels width)
+                        (Pixels.pixels height)
                 , inputWidth = String.fromInt <| round <| width
                 , inputHeight = String.fromInt <| round <| height
               }
@@ -120,7 +124,7 @@ update msg model =
             case String.toFloat textWidth of
                 Just width ->
                     ( { model
-                        | width = width
+                        | view = Size.setWidth (Pixels.pixels width) model.view
                         , inputWidth = textWidth
                       }
                     , Cmd.none
@@ -133,7 +137,7 @@ update msg model =
             case String.toFloat textHeight of
                 Just height ->
                     ( { model
-                        | height = height
+                        | view = Size.setHeight (Pixels.pixels height) model.view
                         , inputHeight = textHeight
                       }
                     , Cmd.none
@@ -220,15 +224,28 @@ sandbox : Model -> Element Msg
 sandbox model =
     let
         drawingSize =
-            Size.size (Pixels.pixels model.width) (Pixels.pixels model.height)
-                |> Size.scale 0.8
+            Size.scale 0.8 model.view
+
+        aspectRatio =
+            AspectRatio.fromSize drawingSize
+
+        scaleStr =
+            Quantity.min drawingSize.width drawingSize.height
+                |> Pixels.inPixels
+                |> String.fromFloat
 
         svg =
             Svg.svg
-                [ Svg.Attributes.width <| String.fromFloat <| Pixels.inPixels drawingSize.width
-                , Svg.Attributes.height <| String.fromFloat <| Pixels.inPixels drawingSize.height
+                [ Svg.Attributes.width <| "100%"
+                , Svg.Attributes.height <| "100%"
+                , Svg.Attributes.viewBox
+                    ("0 0 "
+                        ++ String.fromFloat aspectRatio.x
+                        ++ " "
+                        ++ String.fromFloat aspectRatio.y
+                    )
                 ]
-                (Picture.drawing <| Size.asAspectRatio drawingSize)
+                (Picture.drawing <| aspectRatio)
 
         canvas =
             Element.el
