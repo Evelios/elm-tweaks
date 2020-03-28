@@ -10,7 +10,22 @@ import Test exposing (..)
 suite : Test
 suite =
     describe "Size module"
-        [ describe "asAspectRatio"
+        [ describe "scale"
+            [ test "Positive" <|
+                \_ ->
+                    let
+                        size =
+                            Size.size (Pixels.pixels 100) (Pixels.pixels 200)
+
+                        expected =
+                            Size.size (Pixels.pixels 200) (Pixels.pixels 400)
+
+                        actual =
+                            Size.scale 2 size
+                    in
+                    Expect.equal expected actual
+            ]
+        , describe "asAspectRatio"
             [ test "Aspect ratio from portrait size" <|
                 \_ ->
                     let

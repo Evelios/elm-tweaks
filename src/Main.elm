@@ -15,6 +15,8 @@ import Html exposing (Html)
 import Html.Attributes
 import Length exposing (Meters)
 import Palette
+import Picture
+import Pixels
 import Size exposing (AspectRatio, Size)
 import Svg exposing (Svg)
 import Svg.Attributes
@@ -217,16 +219,16 @@ gui model =
 sandbox : Model -> Element Msg
 sandbox model =
     let
-        ( width, height ) =
-            canvasSize model.width model.height
+        drawingSize =
+            Size.size (Pixels.pixels model.width) (Pixels.pixels model.height)
+                |> Size.scale 0.8
 
-        background =
-            Element.el
-                [ Background.color Palette.colors.background.light
-                , Element.width Element.fill
-                , Element.height Element.fill
+        svg =
+            Svg.svg
+                [ Svg.Attributes.width <| String.fromFloat <| Pixels.inPixels drawingSize.width
+                , Svg.Attributes.height <| String.fromFloat <| Pixels.inPixels drawingSize.height
                 ]
-                canvas
+                (Picture.drawing <| Size.asAspectRatio drawingSize)
 
         canvas =
             Element.el
@@ -234,8 +236,8 @@ sandbox model =
                 , Element.htmlAttribute <| Html.Attributes.id "canvas"
                 , Element.centerX
                 , Element.centerY
-                , Element.width <| Element.px width
-                , Element.height <| Element.px height
+                , Element.width <| Element.px <| round <| Pixels.inPixels drawingSize.width
+                , Element.height <| Element.px <| round <| Pixels.inPixels drawingSize.height
                 , Border.shadow
                     { offset = ( 0.0, 0.0 )
                     , size = 10
@@ -243,18 +245,14 @@ sandbox model =
                     , color = Palette.colors.black
                     }
                 ]
-                (Element.html <| drawing <| canvasSize model.width model.height)
+                (Element.html svg)
     in
-    background
-
-
-canvasSize : Float -> Float -> ( Int, Int )
-canvasSize width height =
-    let
-        inset =
-            0.8
-    in
-    ( round (width * inset), round (height * inset) )
+    Element.el
+        [ Background.color Palette.colors.background.light
+        , Element.width Element.fill
+        , Element.height Element.fill
+        ]
+        canvas
 
 
 drawing : ( Int, Int ) -> Svg msg

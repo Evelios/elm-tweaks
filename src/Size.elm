@@ -4,6 +4,7 @@ module Size exposing
     , asAspectRatio
     , aspectRatio
     , inAspectRatio
+    , scale
     , size
     )
 
@@ -27,19 +28,20 @@ size width height =
     Size width height
 
 
+scale : Float -> Size units -> Size units
+scale ammount from =
+    size
+        (Quantity.multiplyBy ammount from.width)
+        (Quantity.multiplyBy ammount from.height)
+
+
 aspectRatio : Float -> Float -> AspectRatio
 aspectRatio x y =
     let
         denom =
             min x y
-
-        xNorm =
-            x / denom
-
-        yNorm =
-            y / denom
     in
-    AspectRatio xNorm yNorm
+    AspectRatio (x / denom) (y / denom)
 
 
 asAspectRatio : Size units -> AspectRatio

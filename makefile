@@ -1,12 +1,15 @@
 .PHONY: test dev
 
 sources := src/*
+tests := tests/*
 
-elm.js: $(sources)
-	elm make src/Main.elm --output elm.js
+deploy: elm.js
 
 dev:
 	elm-live src/Main.elm --open -- --output=elm.js
 
-test:
+test: $(tests)
 	elm-test
+
+elm.js: $(sources)
+	elm make src/Main.elm --output elm.js
