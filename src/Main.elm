@@ -4,6 +4,7 @@ import AspectRatio exposing (AspectRatio)
 import Browser
 import Browser.Dom
 import Browser.Events
+import Debug
 import Dict exposing (Dict)
 import Element exposing (Element)
 import Element.Background as Background
@@ -20,9 +21,9 @@ import Picture
 import Pixels exposing (Pixels)
 import Quantity
 import Size exposing (Size)
-import Svg exposing (Svg)
-import Svg.Attributes
 import Task
+import TypedSvg
+import TypedSvg.Attributes
 
 
 port getSvg : String -> Cmd msg
@@ -229,23 +230,12 @@ sandbox model =
         aspectRatio =
             AspectRatio.fromSize drawingSize
 
-        scaleStr =
-            Quantity.min drawingSize.width drawingSize.height
-                |> Pixels.inPixels
-                |> String.fromFloat
-
         svg =
-            Svg.svg
-                [ Svg.Attributes.width <| "100%"
-                , Svg.Attributes.height <| "100%"
-                , Svg.Attributes.viewBox
-                    ("0 0 "
-                        ++ String.fromFloat aspectRatio.x
-                        ++ " "
-                        ++ String.fromFloat aspectRatio.y
-                    )
-                ]
-                (Picture.drawing <| aspectRatio)
+            Element.html <|
+                TypedSvg.svg
+                    [ TypedSvg.Attributes.viewBox 0 0 aspectRatio.x aspectRatio.y
+                    ]
+                    (Picture.drawing <| aspectRatio)
 
         canvas =
             Element.el
@@ -262,7 +252,7 @@ sandbox model =
                     , color = Palette.colors.black
                     }
                 ]
-                (Element.html svg)
+                svg
     in
     Element.el
         [ Background.color Palette.colors.background.light
@@ -270,12 +260,3 @@ sandbox model =
         , Element.height Element.fill
         ]
         canvas
-
-
-drawing : ( Int, Int ) -> Svg msg
-drawing ( width, height ) =
-    Svg.svg
-        [ Svg.Attributes.width <| String.fromInt <| width
-        , Svg.Attributes.height <| String.fromInt <| height
-        ]
-        []

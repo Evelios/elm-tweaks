@@ -5,7 +5,7 @@ module AspectRatio exposing
     , inAspectRatio
     )
 
-import Quantity exposing (Quantity)
+import Quantity
 import Size exposing (Size)
 
 
