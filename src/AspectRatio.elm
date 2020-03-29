@@ -3,9 +3,10 @@ module AspectRatio exposing
     , aspectRatio
     , fromSize
     , inAspectRatio
+    , toSizeFromBase
     )
 
-import Quantity
+import Quantity exposing (Quantity)
 import Size exposing (Size)
 
 
@@ -37,6 +38,11 @@ fromSize { width, height } =
             Quantity.ratio largest width
     in
     AspectRatio xAspect yAspect
+
+
+toSizeFromBase : Quantity Float units -> AspectRatio -> Size units
+toSizeFromBase min aspect =
+    Size.size (Quantity.multiplyBy aspect.x min) (Quantity.multiplyBy aspect.y min)
 
 
 inAspectRatio : AspectRatio -> Size units -> Size units

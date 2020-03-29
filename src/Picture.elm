@@ -7,7 +7,7 @@ import Svg exposing (Svg)
 import TypedSvg
 import TypedSvg.Attributes as Attr
 import TypedSvg.Attributes.InPx as AttrPx
-import TypedSvg.Types as Types
+import TypedSvg.Types as Types exposing (Length(..))
 
 
 a =
@@ -21,15 +21,15 @@ b =
 drawing : AspectRatio -> List (Svg msg)
 drawing ratio =
     [ TypedSvg.rect
-        [ AttrPx.width ratio.x
-        , AttrPx.height ratio.y
-        , Attr.fill (Types.Paint b)
+        [ Attr.width <| Num ratio.x
+        , Attr.height <| Num ratio.y
+        , Attr.fill <| Types.Paint b
         ]
         []
     , TypedSvg.circle
-        [ AttrPx.cx (ratio.x / 2)
-        , AttrPx.cy (ratio.y / 2)
-        , AttrPx.r 0.4
+        [ Attr.cx <| Num <| ratio.x / 2
+        , Attr.cy <| Num <| ratio.y / 2
+        , Attr.r (Num 0.4)
         , Attr.fill (Types.Paint a)
         ]
         []

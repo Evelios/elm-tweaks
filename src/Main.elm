@@ -234,20 +234,18 @@ sandbox model =
         aspectRatio =
             AspectRatio.fromSize model.paper
 
-        canvasWidth =
-            Size.min model.view
-                |> Quantity.multiplyBy (scale * aspectRatio.x)
-
-        canvasHeight =
-            Size.min model.view
-                |> Quantity.multiplyBy (scale * aspectRatio.y)
+        canvasSize =
+            AspectRatio.toSizeFromBase (Quantity.multiplyBy scale (Size.min model.view)) aspectRatio
 
         svg =
             Element.html <|
                 TypedSvg.svg
                     [ TypedSvg.Attributes.viewBox 0 0 aspectRatio.x aspectRatio.y
-                    , TypedSvg.Attributes.height <| TypedSvg.Types.Px <| Pixels.inPixels canvasHeight
-                    , TypedSvg.Attributes.width <| TypedSvg.Types.Px <| Pixels.inPixels canvasWidth
+                    , TypedSvg.Attributes.height <| TypedSvg.Types.Px <| Pixels.inPixels canvasSize.height
+                    , TypedSvg.Attributes.width <| TypedSvg.Types.Px <| Pixels.inPixels canvasSize.width
+
+                    --, TypedSvg.Attributes.width <| TypedSvg.Types.Cm <| Length.inCentimeters model.paper.width
+                    --, TypedSvg.Attributes.height <| TypedSvg.Types.Cm <| Length.inCentimeters model.paper.height
                     ]
                     (Picture.drawing <| aspectRatio)
 
@@ -257,6 +255,8 @@ sandbox model =
                 , Element.htmlAttribute <| Html.Attributes.id "canvas"
                 , Element.centerX
                 , Element.centerY
+                , Element.height <| Element.px <| round <| Pixels.inPixels canvasSize.height
+                , Element.width <| Element.px <| round <| Pixels.inPixels canvasSize.width
                 , Border.shadow
                     { offset = ( 0.0, 0.0 )
                     , size = 10
@@ -268,8 +268,6 @@ sandbox model =
     in
     Element.el
         [ Background.color Palette.colors.background.light
-        , Element.centerX
-        , Element.centerY
         , Element.height Element.fill
         , Element.width Element.fill
         ]
