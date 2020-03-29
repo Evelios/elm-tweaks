@@ -1,5 +1,7 @@
 module Size exposing
     ( Size
+    , max
+    , min
     , scale
     , setHeight
     , setWidth
@@ -35,3 +37,13 @@ scale ammount from =
     size
         (Quantity.multiplyBy ammount from.width)
         (Quantity.multiplyBy ammount from.height)
+
+
+min : Size units -> Quantity Float units
+min s =
+    Quantity.min s.width s.height
+
+
+max : Size units -> Quantity Float units
+max s =
+    Quantity.max s.width s.height

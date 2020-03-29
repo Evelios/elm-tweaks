@@ -23,7 +23,8 @@ colors =
 
 
 padding =
-    { default = 20
+    { xLarge = 160
+    , default = 20
     }
 
 

@@ -17,6 +17,7 @@ import Html exposing (Html)
 import Html.Attributes
 import Length exposing (Meters)
 import Palette
+import PaperSizes exposing (Orientation(..))
 import Picture
 import Pixels exposing (Pixels)
 import Quantity
@@ -24,6 +25,7 @@ import Size exposing (Size)
 import Task
 import TypedSvg
 import TypedSvg.Attributes
+import TypedSvg.Types
 
 
 port getSvg : String -> Cmd msg
@@ -34,6 +36,7 @@ port gotSvg : (String -> msg) -> Sub msg
 
 type alias Model =
     { view : Size Pixels
+    , paper : Size Meters
     , inputWidth : String
     , inputHeight : String
     , fileName : String
@@ -74,6 +77,7 @@ main =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { view = Size.size (Pixels.pixels 0) (Pixels.pixels 0)
+      , paper = PaperSizes.a4 Landscape
       , inputWidth = "0"
       , inputHeight = "0"
       , fileName = "canvas"
@@ -224,16 +228,26 @@ gui model =
 sandbox : Model -> Element Msg
 sandbox model =
     let
-        drawingSize =
-            Size.scale 0.8 model.view
+        scale =
+            0.8
 
         aspectRatio =
-            AspectRatio.fromSize drawingSize
+            AspectRatio.fromSize model.paper
+
+        canvasWidth =
+            Size.min model.view
+                |> Quantity.multiplyBy (scale * aspectRatio.x)
+
+        canvasHeight =
+            Size.min model.view
+                |> Quantity.multiplyBy (scale * aspectRatio.y)
 
         svg =
             Element.html <|
                 TypedSvg.svg
                     [ TypedSvg.Attributes.viewBox 0 0 aspectRatio.x aspectRatio.y
+                    , TypedSvg.Attributes.height <| TypedSvg.Types.Px <| Pixels.inPixels canvasHeight
+                    , TypedSvg.Attributes.width <| TypedSvg.Types.Px <| Pixels.inPixels canvasWidth
                     ]
                     (Picture.drawing <| aspectRatio)
 
@@ -243,8 +257,6 @@ sandbox model =
                 , Element.htmlAttribute <| Html.Attributes.id "canvas"
                 , Element.centerX
                 , Element.centerY
-                , Element.width <| Element.px <| round <| Pixels.inPixels drawingSize.width
-                , Element.height <| Element.px <| round <| Pixels.inPixels drawingSize.height
                 , Border.shadow
                     { offset = ( 0.0, 0.0 )
                     , size = 10
@@ -256,7 +268,9 @@ sandbox model =
     in
     Element.el
         [ Background.color Palette.colors.background.light
-        , Element.width Element.fill
+        , Element.centerX
+        , Element.centerY
         , Element.height Element.fill
+        , Element.width Element.fill
         ]
         canvas
