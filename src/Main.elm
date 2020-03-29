@@ -36,11 +36,11 @@ port gotSvg : (String -> msg) -> Sub msg
 
 type alias Model =
     { view : Size Pixels
-    , paper : Size Meters
+    , paper : Orientation -> Size Meters
+    , orientation : Orientation
     , inputWidth : String
     , inputHeight : String
     , fileName : String
-    , paperSize : Size Meters
     }
 
 
@@ -52,16 +52,8 @@ type Msg
     | NewFileName String
     | NewWidth String
     | NewHeight String
-    | NewPaperSize (Size Meters)
-
-
-paperSizes : Dict String (Size Meters)
-paperSizes =
-    Dict.fromList
-        [ ( "A4", Size.size (Length.millimeters 210) (Length.millimeters 297) )
-        , ( "A3", Size.size (Length.millimeters 297) (Length.millimeters 420) )
-        , ( "Letter", Size.size (Length.inches 8.5) (Length.inches 11) )
-        ]
+    | NewPaperSize (Orientation -> Size Meters)
+    | NewOrientation Orientation
 
 
 main : Program () Model Msg
@@ -77,11 +69,11 @@ main =
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { view = Size.size (Pixels.pixels 0) (Pixels.pixels 0)
-      , paper = PaperSizes.a4 Landscape
+      , paper = PaperSizes.a4
+      , orientation = Landscape
       , inputWidth = "0"
       , inputHeight = "0"
       , fileName = "canvas"
-      , paperSize = Size.size (Length.inches 8.5) (Length.inches 11)
       }
     , Task.perform GotViewport Browser.Dom.getViewport
     )
@@ -152,7 +144,10 @@ update msg model =
                     ( { model | inputHeight = textHeight }, Cmd.none )
 
         NewPaperSize size ->
-            ( { model | paperSize = size }, Cmd.none )
+            ( { model | paper = size }, Cmd.none )
+
+        NewOrientation orientation ->
+            ( { model | orientation = orientation }, Cmd.none )
 
 
 download : String -> String -> Cmd msg
@@ -232,7 +227,7 @@ sandbox model =
             0.8
 
         aspectRatio =
-            AspectRatio.fromSize model.paper
+            AspectRatio.fromSize <| model.paper model.orientation
 
         canvasSize =
             AspectRatio.toSizeFromBase (Quantity.multiplyBy scale (Size.min model.view)) aspectRatio
@@ -244,6 +239,7 @@ sandbox model =
                     , TypedSvg.Attributes.height <| TypedSvg.Types.Px <| Pixels.inPixels canvasSize.height
                     , TypedSvg.Attributes.width <| TypedSvg.Types.Px <| Pixels.inPixels canvasSize.width
 
+                    -- TODO: The paper size is not being correctly output. It is being output in px not cm/mm
                     --, TypedSvg.Attributes.width <| TypedSvg.Types.Cm <| Length.inCentimeters model.paper.width
                     --, TypedSvg.Attributes.height <| TypedSvg.Types.Cm <| Length.inCentimeters model.paper.height
                     ]
