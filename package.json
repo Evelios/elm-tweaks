@@ -1,0 +1,29 @@
+{
+  "name": "elm-tweaks",
+  "version": "1.0.0",
+  "description": "A library for creating generative art",
+  "main": "index.html",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Evelios/elm-tweaks.git"
+  },
+  "keywords": [
+    "Generative",
+    "Art"
+  ],
+  "author": "Thomas Waters",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Evelios/elm-tweaks/issues"
+  },
+  "homepage": "https://github.com/Evelios/elm-tweaks#readme",
+  "dependencies": {
+    "material-components-web-elm": "^2.1.2"
+  }
+}

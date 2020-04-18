@@ -1,14 +1,22 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 
-<html>
+<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <title>Main</title>
+  <head>
+    <!-- Meta tags -->
+    <title>Generative</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" type="text/css" href="main.css">
     <script src="elm.js"></script>
-</head>
 
-<body>
+    <!-- Material Design Includes -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500|Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/material-components-web-elm@2.1.2/dist/material-components-web-elm.min.css">
+    <script src="https://unpkg.com/material-components-web-elm@2.1.2/dist/material-components-web-elm.min.js"></script>
+  </head>
+
+  <body>
     <div id="elm"></div>
     <script>
     var app = Elm.Main.init({
@@ -20,6 +28,6 @@
         app.ports.gotSvg.send(node.innerHTML);
     });
     </script>
-</body>
+  </body>
 
 </html>

@@ -6,17 +6,15 @@ import Browser.Dom
 import Browser.Events
 import Debug
 import Dict exposing (Dict)
-import Element exposing (Element)
-import Element.Background as Background
-import Element.Border as Border
-import Element.Font as Font
-import Element.Input as Input
 import File.Download as Download
-import Gui
 import Html exposing (Html)
 import Html.Attributes
 import Length exposing (Meters)
-import Palette
+import Material.Elevation as Elevation
+import Material.IconButton as IconButton exposing (iconButtonConfig)
+import Material.LayoutGrid as LayoutGrid
+import Material.TopAppBar as TopAppBar
+import Material.Typography as Typography
 import PaperSizes exposing (Orientation(..))
 import Picture
 import Pixels exposing (Pixels)
@@ -165,106 +163,45 @@ subscriptions _ =
 
 view : Model -> Html Msg
 view model =
-    Element.layout
-        [ Element.width Element.fill
-        , Element.height Element.fill
-        ]
-        (Element.column
-            [ Element.width Element.fill
-            , Element.height Element.fill
-            ]
-            [ gui model
-            , sandbox model
-            ]
-        )
-
-
-gui : Model -> Element Msg
-gui model =
-    Element.row
-        [ Background.color Palette.colors.background.default
-        , Element.width Element.fill
-        , Font.color Palette.colors.foreground.default
-        ]
-        [ Gui.imageButton
-            { src = "img/download.svg"
-            , description = "Download"
-            }
-            GetSvg
-        , Gui.textbox
-            { label = "File Name"
-            , placeholder = "my_drawing"
-            , value = model.fileName
-            }
-            NewFileName
-        , Gui.image
-            { src = "img/width.svg"
-            , description = "Width"
-            }
-        , Gui.textbox
-            { label = "px"
-            , placeholder = "Width"
-            , value = model.inputWidth
-            }
-            NewWidth
-        , Gui.image
-            { src = "img/height.svg"
-            , description = "Height"
-            }
-        , Gui.textbox
-            { label = "px"
-            , placeholder = "Height"
-            , value = model.inputHeight
-            }
-            NewHeight
-        ]
-
-
-sandbox : Model -> Element Msg
-sandbox model =
     let
-        scale =
-            0.8
+        menu =
+            TopAppBar.topAppBar TopAppBar.topAppBarConfig
+                [ TopAppBar.row []
+                    [ TopAppBar.section [ TopAppBar.alignStart ]
+                        [ IconButton.iconButton
+                            { iconButtonConfig
+                                | additionalAttributes =
+                                    [ TopAppBar.navigationIcon ]
+                            }
+                            "menu"
+                        , Html.span [ TopAppBar.title ]
+                            [ Html.text "Title" ]
+                        ]
+                    ]
+                ]
+
+        maxHeight =
+            Quantity.multiplyBy 0.8 model.view.height
+                |> Pixels.inPixels
+                |> String.fromFloat
+                |> (\px -> px ++ "px")
+
+        center =
+            Html.div
+                [ TopAppBar.fixedAdjust ]
+                [ svg ]
 
         aspectRatio =
             AspectRatio.fromSize <| model.paper model.orientation
 
-        canvasSize =
-            AspectRatio.toSizeFromBase (Quantity.multiplyBy scale (Size.min model.view)) aspectRatio
-
+        svg : Html msg
         svg =
-            Element.html <|
-                TypedSvg.svg
-                    [ TypedSvg.Attributes.viewBox 0 0 aspectRatio.x aspectRatio.y
-                    , TypedSvg.Attributes.height <| TypedSvg.Types.Px <| Pixels.inPixels canvasSize.height
-                    , TypedSvg.Attributes.width <| TypedSvg.Types.Px <| Pixels.inPixels canvasSize.width
-
-                    -- TODO: The paper size is not being correctly output. It is being output in px not cm/mm
-                    --, TypedSvg.Attributes.width <| TypedSvg.Types.Cm <| Length.inCentimeters model.paper.width
-                    --, TypedSvg.Attributes.height <| TypedSvg.Types.Cm <| Length.inCentimeters model.paper.height
-                    ]
-                    (Picture.drawing <| aspectRatio)
-
-        canvas =
-            Element.el
-                [ Background.color Palette.colors.white
-                , Element.htmlAttribute <| Html.Attributes.id "canvas"
-                , Element.centerX
-                , Element.centerY
-                , Element.height <| Element.px <| round <| Pixels.inPixels canvasSize.height
-                , Element.width <| Element.px <| round <| Pixels.inPixels canvasSize.width
-                , Border.shadow
-                    { offset = ( 0.0, 0.0 )
-                    , size = 10
-                    , blur = 20
-                    , color = Palette.colors.black
-                    }
+            TypedSvg.svg
+                [ TypedSvg.Attributes.viewBox 0 0 aspectRatio.x aspectRatio.y
                 ]
-                svg
+                (Picture.drawing <| aspectRatio)
     in
-    Element.el
-        [ Background.color Palette.colors.background.light
-        , Element.height Element.fill
-        , Element.width Element.fill
+    Html.div [ Typography.typography ]
+        [ menu
+        , center
         ]
-        canvas

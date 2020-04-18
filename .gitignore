@@ -2,6 +2,10 @@
 elm-stuff/
 *.js
 
+# JS Stuff
+node_modules/
+package-lock.json
+
 # User Stuff
 icons/
 *.vim

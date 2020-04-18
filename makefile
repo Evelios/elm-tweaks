@@ -1,7 +1,10 @@
-.PHONY: test dev
+.PHONY: install test dev
 
 sources := src/*
 tests := tests/*
+
+install:
+	npm install
 
 deploy: elm.js
 
