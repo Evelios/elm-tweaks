@@ -6,13 +6,18 @@ import Browser.Dom
 import Browser.Events
 import Debug
 import Dict exposing (Dict)
+import Dict.Extra
 import File.Download as Download
 import Html exposing (Html)
 import Html.Attributes
 import Length exposing (Meters)
+import Material.Drawer as Drawer exposing (dismissibleDrawerConfig)
 import Material.Elevation as Elevation
 import Material.IconButton as IconButton exposing (iconButtonConfig)
 import Material.LayoutGrid as LayoutGrid
+import Material.List
+import Material.Menu as Menu exposing (menuConfig)
+import Material.Select as Select exposing (selectConfig, selectOptionConfig)
 import Material.TopAppBar as TopAppBar
 import Material.Typography as Typography
 import PaperSizes exposing (Orientation(..))
@@ -39,6 +44,7 @@ type alias Model =
     , inputWidth : String
     , inputHeight : String
     , fileName : String
+    , showSettings : Bool
     }
 
 
@@ -52,6 +58,7 @@ type Msg
     | NewHeight String
     | NewPaperSize (Orientation -> Size Meters)
     | NewOrientation Orientation
+    | ShowSettings
 
 
 main : Program () Model Msg
@@ -72,6 +79,7 @@ init _ =
       , inputWidth = "0"
       , inputHeight = "0"
       , fileName = "canvas"
+      , showSettings = False
       }
     , Task.perform GotViewport Browser.Dom.getViewport
     )
@@ -147,6 +155,9 @@ update msg model =
         NewOrientation orientation ->
             ( { model | orientation = orientation }, Cmd.none )
 
+        ShowSettings ->
+            ( { model | showSettings = not model.showSettings }, Cmd.none )
+
 
 download : String -> String -> Cmd msg
 download fileName svg =
@@ -163,45 +174,117 @@ subscriptions _ =
 
 view : Model -> Html Msg
 view model =
+    Html.div []
+        [ settings model
+        , Html.div
+            [ Typography.typography
+            , Drawer.appContent
+            ]
+            [ topBar model
+            , canvas model
+            ]
+        ]
+
+
+settings : Model -> Html Msg
+settings model =
     let
-        menu =
-            TopAppBar.topAppBar TopAppBar.topAppBarConfig
-                [ TopAppBar.row []
-                    [ TopAppBar.section [ TopAppBar.alignStart ]
-                        [ IconButton.iconButton
-                            { iconButtonConfig
-                                | additionalAttributes =
-                                    [ TopAppBar.navigationIcon ]
-                            }
-                            "menu"
-                        , Html.span [ TopAppBar.title ]
-                            [ Html.text "Title" ]
-                        ]
-                    ]
+        orientations =
+            Dict.fromList
+                [ ( "Landscape", Landscape )
+                , ( "Portrait", Portrait )
                 ]
 
-        maxHeight =
-            Quantity.multiplyBy 0.8 model.view.height
-                |> Pixels.inPixels
-                |> String.fromFloat
-                |> (\px -> px ++ "px")
+        orientationOptions =
+            Dict.keys orientations
+                |> List.map
+                    (\name ->
+                        Select.selectOption
+                            { selectOptionConfig | value = name }
+                            [ Html.text name ]
+                    )
 
-        center =
-            Html.div
-                [ TopAppBar.fixedAdjust ]
-                [ svg ]
+        newOrientation str =
+            Dict.get str orientations
+                |> Maybe.withDefault model.orientation
+                |> NewOrientation
 
+        orientationSelection =
+            Select.filledSelect
+                { selectConfig
+                    | label = "Orientation"
+                    , value =
+                        orientations
+                            |> Dict.Extra.find (\_ value -> value == model.orientation)
+                            |> Maybe.withDefault ( "Unknown", model.orientation )
+                            |> Tuple.first
+                            |> Just
+                    , onChange = Just newOrientation
+                }
+                orientationOptions
+    in
+    Drawer.dismissibleDrawer
+        { dismissibleDrawerConfig
+            | open = model.showSettings
+        }
+        [ Drawer.drawerContent []
+            [ Material.List.list Material.List.listConfig
+                [ Material.List.listItem Material.List.listItemConfig
+                    [ orientationSelection
+                    ]
+                ]
+            ]
+        ]
+
+
+topBar : Model -> Html Msg
+topBar model =
+    TopAppBar.topAppBar TopAppBar.topAppBarConfig
+        [ TopAppBar.row []
+            [ TopAppBar.section [ TopAppBar.alignStart ]
+                [ IconButton.iconButton
+                    { iconButtonConfig
+                        | additionalAttributes = [ TopAppBar.navigationIcon ]
+                        , onClick = Just ShowSettings
+                    }
+                    "settings"
+                , Html.span [ TopAppBar.title ]
+                    [ Html.text model.fileName ]
+                ]
+            , TopAppBar.section [ TopAppBar.alignEnd ]
+                [ IconButton.iconButton
+                    { iconButtonConfig
+                        | additionalAttributes = [ TopAppBar.actionItem ]
+                        , onClick = Just GetSvg
+                    }
+                    "save_alt"
+                ]
+            ]
+        ]
+
+
+canvas : Model -> Html Msg
+canvas model =
+    let
         aspectRatio =
             AspectRatio.fromSize <| model.paper model.orientation
 
-        svg : Html msg
         svg =
             TypedSvg.svg
                 [ TypedSvg.Attributes.viewBox 0 0 aspectRatio.x aspectRatio.y
+                , TypedSvg.Attributes.height <|
+                    TypedSvg.Types.mm <|
+                        Length.inMillimeters <|
+                            .height (model.paper model.orientation)
+                , TypedSvg.Attributes.width <|
+                    TypedSvg.Types.mm <|
+                        Length.inMillimeters <|
+                            .width (model.paper model.orientation)
                 ]
                 (Picture.drawing <| aspectRatio)
     in
-    Html.div [ Typography.typography ]
-        [ menu
-        , center
+    Html.div
+        [ TopAppBar.fixedAdjust
+        , Html.Attributes.id "canvas"
         ]
+        [ svg ]
