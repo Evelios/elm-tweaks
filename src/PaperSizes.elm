@@ -1,4 +1,13 @@
-module PaperSizes exposing (Orientation(..), a0, a1, a2, a3, a4)
+module PaperSizes exposing
+    ( Orientation(..)
+    , a0
+    , a1
+    , a2
+    , a3
+    , a4
+    , inOrientation
+    , letter
+    )
 
 {-| This library contains a bunch of standard paper format sizes. These
 paper sizes are all given according to the orientation of the paper,

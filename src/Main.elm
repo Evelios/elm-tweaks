@@ -197,17 +197,46 @@ settings model =
                     ]
             , onChange = NewOrientation
             , value = model.orientation
+            , comparison = Nothing
             }
+
+        paperSizeOptions =
+            { label = "Paper Size"
+            , selection =
+                Dict.fromList
+                    [ ( "Letter", PaperSizes.letter )
+                    , ( "A4", PaperSizes.a4 )
+                    , ( "A3", PaperSizes.a3 )
+                    , ( "A2", PaperSizes.a2 )
+                    , ( "A1", PaperSizes.a1 )
+                    , ( "A0", PaperSizes.a0 )
+                    ]
+            , onChange = NewPaperSize
+            , value = model.paper
+            , comparison =
+                Just
+                    (\_ value ->
+                        value model.orientation == model.paper model.orientation
+                    )
+            }
+
+        settingsOptions =
+            [ Material.List.listGroupSubheader [] [ Html.text "Settings" ]
+            , Material.List.listItemDivider Material.List.listItemDividerConfig
+            , Material.List.listItem Material.List.listItemConfig
+                [ Gui.inputSelection orientationOptions ]
+            , Material.List.listItem Material.List.listItemConfig
+                [ Gui.inputSelection paperSizeOptions ]
+            ]
     in
     Drawer.dismissibleDrawer
         { dismissibleDrawerConfig
             | open = model.showSettings
         }
         [ Drawer.drawerContent []
-            [ Material.List.list Material.List.listConfig
-                [ Material.List.listItem Material.List.listItemConfig
-                    [ Gui.inputSelection orientationOptions
-                    ]
+            [ Material.List.listGroup []
+                [ Material.List.list Material.List.listConfig settingsOptions
+                , Material.List.listGroupDivider []
                 ]
             ]
         ]

@@ -11,12 +11,21 @@ type alias InputSelectionOptions option msg =
     , selection : Dict String option
     , onChange : option -> msg
     , value : option
+    , comparison : Maybe (String -> option -> Bool)
     }
 
 
 inputSelection : InputSelectionOptions option msg -> Html msg
 inputSelection inputOptions =
     let
+        comparison =
+            case inputOptions.comparison of
+                Just compare ->
+                    compare
+
+                Nothing ->
+                    \_ value -> value == inputOptions.value
+
         selectionOptions =
             Dict.keys inputOptions.selection
                 |> List.map
@@ -37,7 +46,7 @@ inputSelection inputOptions =
                 | label = inputOptions.label
                 , value =
                     inputOptions.selection
-                        |> Dict.Extra.find (\_ value -> value == inputOptions.value)
+                        |> Dict.Extra.find comparison
                         |> Maybe.withDefault ( "Unknown", inputOptions.value )
                         |> Tuple.first
                         |> Just
