@@ -5,9 +5,9 @@ import Browser
 import Browser.Dom
 import Browser.Events
 import Debug
-import Dict exposing (Dict)
-import Dict.Extra
+import Dict
 import File.Download as Download
+import Gui
 import Html exposing (Html)
 import Html.Attributes
 import Length exposing (Meters)
@@ -17,7 +17,6 @@ import Material.IconButton as IconButton exposing (iconButtonConfig)
 import Material.LayoutGrid as LayoutGrid
 import Material.List
 import Material.Menu as Menu exposing (menuConfig)
-import Material.Select as Select exposing (selectConfig, selectOptionConfig)
 import Material.TopAppBar as TopAppBar
 import Material.Typography as Typography
 import PaperSizes exposing (Orientation(..))
@@ -189,39 +188,16 @@ view model =
 settings : Model -> Html Msg
 settings model =
     let
-        orientations =
-            Dict.fromList
-                [ ( "Landscape", Landscape )
-                , ( "Portrait", Portrait )
-                ]
-
         orientationOptions =
-            Dict.keys orientations
-                |> List.map
-                    (\name ->
-                        Select.selectOption
-                            { selectOptionConfig | value = name }
-                            [ Html.text name ]
-                    )
-
-        newOrientation str =
-            Dict.get str orientations
-                |> Maybe.withDefault model.orientation
-                |> NewOrientation
-
-        orientationSelection =
-            Select.filledSelect
-                { selectConfig
-                    | label = "Orientation"
-                    , value =
-                        orientations
-                            |> Dict.Extra.find (\_ value -> value == model.orientation)
-                            |> Maybe.withDefault ( "Unknown", model.orientation )
-                            |> Tuple.first
-                            |> Just
-                    , onChange = Just newOrientation
-                }
-                orientationOptions
+            { label = "Orientation"
+            , selection =
+                Dict.fromList
+                    [ ( "Landscape", Landscape )
+                    , ( "Portrait", Portrait )
+                    ]
+            , onChange = NewOrientation
+            , value = model.orientation
+            }
     in
     Drawer.dismissibleDrawer
         { dismissibleDrawerConfig
@@ -230,7 +206,7 @@ settings model =
         [ Drawer.drawerContent []
             [ Material.List.list Material.List.listConfig
                 [ Material.List.listItem Material.List.listItemConfig
-                    [ orientationSelection
+                    [ Gui.inputSelection orientationOptions
                     ]
                 ]
             ]
