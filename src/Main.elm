@@ -277,19 +277,26 @@ canvas model =
         svg =
             TypedSvg.svg
                 [ TypedSvg.Attributes.viewBox 0 0 aspectRatio.x aspectRatio.y
-                , TypedSvg.Attributes.height <|
-                    TypedSvg.Types.mm <|
-                        Length.inMillimeters <|
-                            .height (model.paper model.orientation)
-                , TypedSvg.Attributes.width <|
-                    TypedSvg.Types.mm <|
-                        Length.inMillimeters <|
-                            .width (model.paper model.orientation)
+                , Html.Attributes.style "width" "100%"
+                , Html.Attributes.style "height" "100%"
+
+                --, TypedSvg.Attributes.height <|
+                --TypedSvg.Types.mm <|
+                --Length.inMillimeters <|
+                --.height (model.paper model.orientation)
+                --, TypedSvg.Attributes.width <|
+                --TypedSvg.Types.mm <|
+                --Length.inMillimeters <|
+                --.width (model.paper model.orientation)
                 ]
                 (Picture.drawing <| aspectRatio)
     in
-    Html.div
-        [ TopAppBar.fixedAdjust
-        , Html.Attributes.id "canvas"
+    Html.div [ TopAppBar.fixedAdjust ]
+        [ Html.div
+            [ Html.Attributes.style "width" "80%"
+            , Html.Attributes.style "height" "80%"
+            , Html.Attributes.style "margin" "auto"
+            , Html.Attributes.id "canvas"
+            ]
+            [ svg ]
         ]
-        [ svg ]
