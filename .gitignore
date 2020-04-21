@@ -8,5 +8,6 @@ package-lock.json
 
 # User Stuff
 icons/
+todo.md
 *.vim
 *.swp

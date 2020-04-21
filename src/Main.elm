@@ -23,7 +23,9 @@ import PaperSizes exposing (Orientation(..))
 import Picture
 import Pixels exposing (Pixels)
 import Quantity
+import Random
 import Size exposing (Size)
+import Svg exposing (Svg)
 import Task
 import TypedSvg
 import TypedSvg.Attributes
@@ -44,6 +46,7 @@ type alias Model =
     , inputHeight : String
     , fileName : String
     , showSettings : Bool
+    , picture : List (Svg Msg)
     }
 
 
@@ -58,6 +61,7 @@ type Msg
     | NewPaperSize (Orientation -> Size Meters)
     | NewOrientation Orientation
     | ShowSettings
+    | NewPicture (List (Svg Msg))
 
 
 main : Program () Model Msg
@@ -72,15 +76,26 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { view = Size.size (Pixels.pixels 0) (Pixels.pixels 0)
-      , paper = PaperSizes.a4
-      , orientation = Landscape
-      , inputWidth = "0"
-      , inputHeight = "0"
-      , fileName = "canvas"
-      , showSettings = False
-      }
-    , Task.perform GotViewport Browser.Dom.getViewport
+    let
+        model =
+            { view = Size.size (Pixels.pixels 0) (Pixels.pixels 0)
+            , paper = PaperSizes.a4
+            , orientation = Landscape
+            , inputWidth = "0"
+            , inputHeight = "0"
+            , fileName = "canvas"
+            , showSettings = False
+            , picture = []
+            }
+
+        aspectRatio =
+            AspectRatio.fromSize <| model.paper model.orientation
+    in
+    ( model
+    , Cmd.batch
+        [ Task.perform GotViewport Browser.Dom.getViewport
+        , Random.generate NewPicture (Picture.drawing aspectRatio)
+        ]
     )
 
 
@@ -156,6 +171,9 @@ update msg model =
 
         ShowSettings ->
             ( { model | showSettings = not model.showSettings }, Cmd.none )
+
+        NewPicture picture ->
+            ( { model | picture = picture }, Cmd.none )
 
 
 download : String -> String -> Cmd msg
@@ -289,7 +307,7 @@ canvas model =
                 --Length.inMillimeters <|
                 --.width (model.paper model.orientation)
                 ]
-                (Picture.drawing <| aspectRatio)
+                model.picture
     in
     Html.div [ TopAppBar.fixedAdjust ]
         [ Html.div

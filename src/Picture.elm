@@ -1,8 +1,14 @@
 module Picture exposing (drawing)
 
+import Algorithms
 import AspectRatio exposing (AspectRatio)
+import BoundingBox2d
 import Color exposing (Color)
 import Pixels exposing (Pixels)
+import Point2d
+import Quantity
+import Random
+import Random.Extra
 import Svg exposing (Svg)
 import TypedSvg
 import TypedSvg.Attributes as Attr
@@ -18,19 +24,49 @@ b =
     Color.rgb 0.7 0.25 0.5
 
 
-drawing : AspectRatio -> List (Svg msg)
+drawing : AspectRatio -> Random.Generator (List (Svg msg))
 drawing ratio =
-    [ TypedSvg.rect
-        [ Attr.width <| Num ratio.x
-        , Attr.height <| Num ratio.y
-        , Attr.fill <| Types.Paint b
-        ]
-        []
-    , TypedSvg.circle
-        [ Attr.cx <| Num <| ratio.x / 2
-        , Attr.cy <| Num <| ratio.y / 2
-        , Attr.r (Num 0.4)
-        , Attr.fill (Types.Paint a)
-        ]
-        []
-    ]
+    let
+        density =
+            0.1
+
+        radius =
+            density / 2
+
+        points =
+            Algorithms.poisson
+                (Quantity.float 0.5)
+                (BoundingBox2d.from
+                    Point2d.origin
+                    (Point2d.unitless
+                        (AspectRatio.x ratio)
+                        (AspectRatio.y ratio)
+                    )
+                )
+
+        pointToCircle point =
+            let
+                { x, y } =
+                    Point2d.toUnitless point
+            in
+            TypedSvg.circle
+                [ Attr.cx <| Num x
+                , Attr.cy <| Num y
+                , Attr.r <| Num radius
+                , Attr.fill (Types.Paint a)
+                ]
+                []
+
+        circles =
+            List.map (Random.map pointToCircle) points
+
+        background =
+            Random.constant <|
+                TypedSvg.rect
+                    [ Attr.width <| Num ratio.x
+                    , Attr.height <| Num ratio.y
+                    , Attr.fill <| Types.Paint b
+                    ]
+                    []
+    in
+    Random.Extra.sequence <| background :: circles

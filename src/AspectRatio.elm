@@ -4,6 +4,8 @@ module AspectRatio exposing
     , fromSize
     , inAspectRatio
     , toSizeFromBase
+    , x
+    , y
     )
 
 import Quantity exposing (Quantity)
@@ -17,12 +19,22 @@ type alias AspectRatio =
 
 
 aspectRatio : Float -> Float -> AspectRatio
-aspectRatio x y =
+aspectRatio xin yin =
     let
         denom =
-            min x y
+            min xin yin
     in
-    AspectRatio (x / denom) (y / denom)
+    AspectRatio (xin / denom) (yin / denom)
+
+
+x : AspectRatio -> Float
+x ratio =
+    .x ratio
+
+
+y : AspectRatio -> Float
+y ratio =
+    .y ratio
 
 
 fromSize : Size units -> AspectRatio
@@ -46,20 +58,20 @@ toSizeFromBase min aspect =
 
 
 inAspectRatio : AspectRatio -> Size units -> Size units
-inAspectRatio { x, y } { width, height } =
+inAspectRatio ratio { width, height } =
     let
         widthNew =
-            if y > x then
-                Quantity.divideBy y height
+            if x ratio < y ratio then
+                Quantity.divideBy (y ratio) height
 
             else
-                Quantity.divideBy y width
+                Quantity.divideBy (y ratio) width
 
         heightNew =
-            if y > x then
-                Quantity.divideBy x height
+            if y ratio > x ratio then
+                Quantity.divideBy (x ratio) height
 
             else
-                Quantity.divideBy x width
+                Quantity.divideBy (x ratio) width
     in
     Size.size widthNew heightNew
