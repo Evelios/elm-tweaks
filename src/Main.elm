@@ -13,6 +13,7 @@ import Html.Attributes
 import Length exposing (Meters)
 import Material.Drawer as Drawer exposing (dismissibleDrawerConfig)
 import Material.Elevation as Elevation
+import Material.Fab as Fab exposing (fabConfig)
 import Material.IconButton as IconButton exposing (iconButtonConfig)
 import Material.LayoutGrid as LayoutGrid
 import Material.List
@@ -61,7 +62,8 @@ type Msg
     | NewPaperSize (Orientation -> Size Meters)
     | NewOrientation Orientation
     | ShowSettings
-    | NewPicture (List (Svg Msg))
+    | GotPicture (List (Svg Msg))
+    | NewPicture
 
 
 main : Program () Model Msg
@@ -87,14 +89,11 @@ init _ =
             , showSettings = False
             , picture = []
             }
-
-        aspectRatio =
-            AspectRatio.fromSize <| model.paper model.orientation
     in
     ( model
     , Cmd.batch
         [ Task.perform GotViewport Browser.Dom.getViewport
-        , Random.generate NewPicture (Picture.drawing aspectRatio)
+        , newPicture model
         ]
     )
 
@@ -172,13 +171,26 @@ update msg model =
         ShowSettings ->
             ( { model | showSettings = not model.showSettings }, Cmd.none )
 
-        NewPicture picture ->
+        GotPicture picture ->
             ( { model | picture = picture }, Cmd.none )
+
+        NewPicture ->
+            ( model, newPicture model )
 
 
 download : String -> String -> Cmd msg
 download fileName svg =
-    Download.string (String.append fileName ".svg") "image/svg+xml" svg
+    String.replace "style=\"display: none;\"" "" svg
+        |> Download.string (String.append fileName ".svg") "image/svg+xml"
+
+
+newPicture : Model -> Cmd Msg
+newPicture model =
+    let
+        aspectRatio =
+            AspectRatio.fromSize <| model.paper model.orientation
+    in
+    Random.generate GotPicture (Picture.drawing aspectRatio)
 
 
 subscriptions : model -> Sub Msg
@@ -196,11 +208,28 @@ view model =
         , Html.div
             [ Typography.typography
             , Drawer.appContent
+            , Html.Attributes.style "width" "100%"
+            , Html.Attributes.style "height" "100%"
             ]
             [ topBar model
             , canvas model
+            , fab
             ]
         ]
+
+
+fab : Html Msg
+fab =
+    Fab.fab
+        { fabConfig
+            | onClick = Just NewPicture
+            , additionalAttributes =
+                [ Html.Attributes.style "position" "absolute"
+                , Html.Attributes.style "bottom" "50px"
+                , Html.Attributes.style "right" "50px"
+                ]
+        }
+        "camera"
 
 
 settings : Model -> Html Msg
@@ -297,24 +326,33 @@ canvas model =
                 [ TypedSvg.Attributes.viewBox 0 0 aspectRatio.x aspectRatio.y
                 , Html.Attributes.style "width" "100%"
                 , Html.Attributes.style "height" "100%"
+                ]
+                model.picture
 
-                --, TypedSvg.Attributes.height <|
-                --TypedSvg.Types.mm <|
-                --Length.inMillimeters <|
-                --.height (model.paper model.orientation)
-                --, TypedSvg.Attributes.width <|
-                --TypedSvg.Types.mm <|
-                --Length.inMillimeters <|
-                --.width (model.paper model.orientation)
+        export =
+            TypedSvg.svg
+                [ TypedSvg.Attributes.viewBox 0 0 aspectRatio.x aspectRatio.y
+                , Html.Attributes.style "display" "none"
+                , TypedSvg.Attributes.height <|
+                    TypedSvg.Types.mm <|
+                        Length.inMillimeters <|
+                            .height (model.paper model.orientation)
+                , TypedSvg.Attributes.width <|
+                    TypedSvg.Types.mm <|
+                        Length.inMillimeters <|
+                            .width (model.paper model.orientation)
                 ]
                 model.picture
     in
     Html.div [ TopAppBar.fixedAdjust ]
         [ Html.div
-            [ Html.Attributes.style "width" "80%"
-            , Html.Attributes.style "height" "80%"
+            [ Html.Attributes.style "width" "60%"
+            , Html.Attributes.style "height" "60%"
             , Html.Attributes.style "margin" "auto"
-            , Html.Attributes.id "canvas"
             ]
             [ svg ]
+        , Html.div
+            [ Html.Attributes.id "canvas"
+            ]
+            [ export ]
         ]
