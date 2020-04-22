@@ -48,6 +48,7 @@ type alias Model =
     , fileName : String
     , showSettings : Bool
     , picture : List (Svg Msg)
+    , unit : Unit
     }
 
 
@@ -64,6 +65,13 @@ type Msg
     | ShowSettings
     | GotPicture (List (Svg Msg))
     | NewPicture
+    | NewUnit Unit
+
+
+type Unit
+    = Millimeters
+    | Centimeters
+    | Inches
 
 
 main : Program () Model Msg
@@ -88,6 +96,7 @@ init _ =
             , fileName = "canvas"
             , showSettings = False
             , picture = []
+            , unit = Millimeters
             }
     in
     ( model
@@ -176,6 +185,9 @@ update msg model =
 
         NewPicture ->
             ( model, newPicture model )
+
+        NewUnit unit ->
+            ( { model | unit = unit }, Cmd.none )
 
 
 download : String -> String -> Cmd msg
@@ -267,11 +279,26 @@ settings model =
                     )
             }
 
+        unitOptions =
+            { label = "Units"
+            , selection =
+                Dict.fromList
+                    [ ( "Millimeters", Millimeters )
+                    , ( "Centimeters", Centimeters )
+                    , ( "Inches", Inches )
+                    ]
+            , onChange = NewUnit
+            , value = model.unit
+            , comparison = Nothing
+            }
+
         settingsOptions =
             [ Material.List.listGroupSubheader [] [ Html.text "Settings" ]
             , Material.List.listItemDivider Material.List.listItemDividerConfig
             , Material.List.listItem Material.List.listItemConfig
                 [ Gui.inputSelection orientationOptions ]
+            , Material.List.listItem Material.List.listItemConfig
+                [ Gui.inputSelection unitOptions ]
             , Material.List.listItem Material.List.listItemConfig
                 [ Gui.inputSelection paperSizeOptions ]
             ]
@@ -329,18 +356,23 @@ canvas model =
                 ]
                 model.picture
 
+        conversion =
+            case model.unit of
+                Millimeters ->
+                    TypedSvg.Types.mm << Length.inMillimeters
+
+                Centimeters ->
+                    TypedSvg.Types.cm << Length.inCentimeters
+
+                Inches ->
+                    TypedSvg.Types.inch << Length.inInches
+
         export =
             TypedSvg.svg
                 [ TypedSvg.Attributes.viewBox 0 0 aspectRatio.x aspectRatio.y
                 , Html.Attributes.style "display" "none"
-                , TypedSvg.Attributes.height <|
-                    TypedSvg.Types.mm <|
-                        Length.inMillimeters <|
-                            .height (model.paper model.orientation)
-                , TypedSvg.Attributes.width <|
-                    TypedSvg.Types.mm <|
-                        Length.inMillimeters <|
-                            .width (model.paper model.orientation)
+                , TypedSvg.Attributes.height <| conversion <| .height (model.paper model.orientation)
+                , TypedSvg.Attributes.width <| conversion <| .width (model.paper model.orientation)
                 ]
                 model.picture
     in
