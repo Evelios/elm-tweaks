@@ -1,11 +1,13 @@
 module Size exposing
     ( Size
+    , height
     , max
     , min
     , scale
     , setHeight
     , setWidth
     , size
+    , width
     )
 
 import Quantity exposing (Quantity)
@@ -18,18 +20,28 @@ type alias Size units =
 
 
 size : Quantity Float units -> Quantity Float units -> Size units
-size width height =
-    Size width height
+size w h =
+    Size w h
+
+
+width : Size units -> Quantity Float units
+width s =
+    s.width
+
+
+height : Size units -> Quantity Float units
+height s =
+    s.height
 
 
 setHeight : Quantity Float units -> Size units -> Size units
-setHeight height old =
-    { old | height = height }
+setHeight h old =
+    { old | height = h }
 
 
 setWidth : Quantity Float units -> Size units -> Size units
-setWidth width old =
-    { old | width = width }
+setWidth w old =
+    { old | width = w }
 
 
 scale : Float -> Size units -> Size units
