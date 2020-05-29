@@ -4,7 +4,6 @@ import AspectRatio exposing (AspectRatio)
 import Browser
 import Browser.Dom
 import Browser.Events
-import Debug
 import Dict
 import File.Download as Download
 import Gui
@@ -12,18 +11,14 @@ import Html exposing (Html)
 import Html.Attributes
 import Length exposing (Meters)
 import Material.Drawer as Drawer exposing (dismissibleDrawerConfig)
-import Material.Elevation as Elevation
 import Material.Fab as Fab exposing (fabConfig)
 import Material.IconButton as IconButton exposing (iconButtonConfig)
-import Material.LayoutGrid as LayoutGrid
 import Material.List
-import Material.Menu as Menu exposing (menuConfig)
 import Material.TopAppBar as TopAppBar
 import Material.Typography as Typography
 import PaperSizes exposing (Orientation(..))
 import Picture
 import Pixels exposing (Pixels)
-import Quantity
 import Random
 import Size exposing (Size)
 import Svg exposing (Svg)
@@ -200,7 +195,7 @@ newPicture : Model -> Cmd Msg
 newPicture model =
     let
         aspectRatio =
-            AspectRatio.fromSize <| model.paper model.orientation
+            Size.aspectRatio <| model.paper model.orientation
     in
     Random.generate GotPicture (Picture.drawing aspectRatio)
 
@@ -345,12 +340,12 @@ topBar model =
 canvas : Model -> Html Msg
 canvas model =
     let
-        aspectRatio =
-            AspectRatio.fromSize <| model.paper model.orientation
+        paperRatio =
+            Size.aspectRatio <| model.paper model.orientation
 
         svg =
             TypedSvg.svg
-                [ TypedSvg.Attributes.viewBox 0 0 aspectRatio.x aspectRatio.y
+                [ TypedSvg.Attributes.viewBox 0 0
                 , Html.Attributes.style "width" "100%"
                 , Html.Attributes.style "height" "100%"
                 ]
@@ -369,10 +364,10 @@ canvas model =
 
         export =
             TypedSvg.svg
-                [ TypedSvg.Attributes.viewBox 0 0 aspectRatio.x aspectRatio.y
+                [ TypedSvg.Attributes.viewBox 0 0 (AspectRatio.x paperRatio) (AspectRatio.y paperRatio)
                 , Html.Attributes.style "display" "none"
-                , TypedSvg.Attributes.height <| conversion <| .height (model.paper model.orientation)
-                , TypedSvg.Attributes.width <| conversion <| .width (model.paper model.orientation)
+                , TypedSvg.Attributes.height <| conversion <| Size.height (model.paper model.orientation)
+                , TypedSvg.Attributes.width <| conversion <| Size.width (model.paper model.orientation)
                 ]
                 model.picture
     in
