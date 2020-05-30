@@ -11,7 +11,7 @@ module Size exposing
     )
 
 import AspectRatio exposing (AspectRatio)
-import Quantity exposing (Quantity)
+import Quantity exposing (Quantity(..))
 
 
 type Size units
@@ -50,36 +50,28 @@ scale amount (Size oldWidth oldHeight) =
         (Quantity.multiplyBy amount oldHeight)
 
 
+{-| Change the aspect ratio of the current size but make sure that the new size remains in the same bounding box as the
+original size object.
+-}
 shrinkToAspectRatio : AspectRatio -> Size units -> Size units
-shrinkToAspectRatio ratio (Size theWidth theHeight) =
+shrinkToAspectRatio newRatio theSize =
     let
-        widthNew =
-            if AspectRatio.x ratio < AspectRatio.y ratio then
-                Quantity.divideBy (AspectRatio.y ratio) theHeight
+        maxDimension =
+            Quantity.max (width theSize) (height theSize)
 
-            else
-                Quantity.divideBy (AspectRatio.y ratio) theWidth
+        unscaledSize =
+            size
+                (Quantity.multiplyBy (AspectRatio.xNormalizedBelowOne newRatio) maxDimension)
+                (Quantity.multiplyBy (AspectRatio.yNormalizedBelowOne newRatio) maxDimension)
 
-        heightNew =
-            if AspectRatio.y ratio > AspectRatio.x ratio then
-                Quantity.divideBy (AspectRatio.x ratio) theHeight
-
-            else
-                Quantity.divideBy (AspectRatio.x ratio) theWidth
+        scaleRatio =
+            min
+                (Quantity.ratio (width theSize) (width unscaledSize))
+                (Quantity.ratio (height theSize) (height unscaledSize))
     in
-    size widthNew heightNew
+    scale scaleRatio unscaledSize
 
 
 aspectRatio : Size units -> AspectRatio
-aspectRatio (Size theWidth theHeight) =
-    let
-        largest =
-            Quantity.max theWidth theHeight
-
-        xAspect =
-            Quantity.ratio largest theHeight
-
-        yAspect =
-            Quantity.ratio largest theWidth
-    in
-    AspectRatio.aspectRatio xAspect yAspect
+aspectRatio (Size (Quantity theWidth) (Quantity theHeight)) =
+    AspectRatio.aspectRatioUnsafe theWidth theHeight

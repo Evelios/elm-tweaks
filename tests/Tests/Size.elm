@@ -1,9 +1,10 @@
 module Tests.Size exposing (..)
 
-import AspectRatio
+import AspectRatio exposing (AspectRatio)
 import Expect
-import Pixels
-import Size
+import Module.Expect
+import Pixels exposing (Pixels)
+import Size exposing (Size)
 import Test exposing (Test, describe, test)
 
 
@@ -24,31 +25,31 @@ scale =
             Expect.equal expected actual
 
 
-asAspectRatio : Test
-asAspectRatio =
-    describe "asAspectRatio"
-        [ test "Aspect ratio from portrait size" <|
+aspectRatioTest : Test
+aspectRatioTest =
+    describe "Aspect ratio"
+        [ test "from portrait size" <|
             \_ ->
                 let
                     size =
                         Size.size (Pixels.pixels 100) (Pixels.pixels 150)
 
-                    aspectRatio =
-                        AspectRatio.aspectRatio 1 1.5
+                    actual =
+                        AspectRatio.aspectRatioUnsafe 1 1.5
                 in
                 Size.aspectRatio size
-                    |> Expect.equal aspectRatio
-        , test "Aspect ratio from landscape size" <|
+                    |> Module.Expect.aspectRatio actual
+        , test "from landscape size" <|
             \_ ->
                 let
                     size =
                         Size.size (Pixels.pixels 150) (Pixels.pixels 100)
 
-                    aspectRatio =
-                        AspectRatio.aspectRatio 1.5 1
+                    expected =
+                        AspectRatio.aspectRatioUnsafe 1.5 1
                 in
                 Size.aspectRatio size
-                    |> Expect.equal aspectRatio
+                    |> Module.Expect.aspectRatio expected
         ]
 
 
@@ -62,7 +63,7 @@ shrinkToAspectRatio =
                         Size.size (Pixels.pixels 200) (Pixels.pixels 200)
 
                     aspectRatio =
-                        AspectRatio.aspectRatio 1 2
+                        AspectRatio.aspectRatioUnsafe 1 2
 
                     expected =
                         Size.size (Pixels.pixels 100) (Pixels.pixels 200)
@@ -76,7 +77,7 @@ shrinkToAspectRatio =
                         Size.size (Pixels.pixels 200) (Pixels.pixels 200)
 
                     aspectRatio =
-                        AspectRatio.aspectRatio 2 1
+                        AspectRatio.aspectRatioUnsafe 2 1
 
                     expected =
                         Size.size (Pixels.pixels 200) (Pixels.pixels 100)
@@ -90,7 +91,7 @@ shrinkToAspectRatio =
                         Size.size (Pixels.pixels 200) (Pixels.pixels 100)
 
                     aspectRatio =
-                        AspectRatio.aspectRatio 1 2
+                        AspectRatio.aspectRatioUnsafe 1 2
 
                     expected =
                         Size.size (Pixels.pixels 50) (Pixels.pixels 100)
@@ -104,7 +105,7 @@ shrinkToAspectRatio =
                         Size.size (Pixels.pixels 100) (Pixels.pixels 200)
 
                     aspectRatio =
-                        AspectRatio.aspectRatio 2 1
+                        AspectRatio.aspectRatioUnsafe 2 1
 
                     expected =
                         Size.size (Pixels.pixels 100) (Pixels.pixels 50)
@@ -118,13 +119,13 @@ shrinkToAspectRatio =
                         Size.size (Pixels.pixels 300) (Pixels.pixels 400)
 
                     aspectRatio =
-                        AspectRatio.aspectRatio 3 2
+                        AspectRatio.aspectRatioUnsafe 3 2
 
                     expected =
                         Size.size (Pixels.pixels 300) (Pixels.pixels 200)
                 in
                 Size.shrinkToAspectRatio aspectRatio size
-                    |> Expect.equal expected
+                    |> Module.Expect.size expected
         , test "Non-normalized aspect ratio landscape to portrait" <|
             \_ ->
                 let
@@ -132,11 +133,11 @@ shrinkToAspectRatio =
                         Size.size (Pixels.pixels 400) (Pixels.pixels 300)
 
                     aspectRatio =
-                        AspectRatio.aspectRatio 2 3
+                        AspectRatio.aspectRatioUnsafe 2 3
 
                     expected =
                         Size.size (Pixels.pixels 200) (Pixels.pixels 300)
                 in
                 Size.shrinkToAspectRatio aspectRatio size
-                    |> Expect.equal expected
+                    |> Module.Expect.size expected
         ]

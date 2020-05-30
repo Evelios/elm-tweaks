@@ -4,6 +4,7 @@ import AspectRatio exposing (AspectRatio)
 import Browser
 import Browser.Dom
 import Browser.Events
+import Debug
 import Dict
 import File.Download as Download
 import Gui
@@ -11,6 +12,7 @@ import Html exposing (Html)
 import Html.Attributes
 import Length exposing (Meters)
 import Material.Drawer as Drawer exposing (dismissibleDrawerConfig)
+import Material.Elevation
 import Material.Fab as Fab exposing (fabConfig)
 import Material.IconButton as IconButton exposing (iconButtonConfig)
 import Material.List
@@ -19,6 +21,7 @@ import Material.Typography as Typography
 import PaperSizes exposing (Orientation(..))
 import Picture
 import Pixels exposing (Pixels)
+import Quantity
 import Random
 import Size exposing (Size)
 import Svg exposing (Svg)
@@ -340,29 +343,58 @@ topBar model =
 canvas : Model -> Html Msg
 canvas model =
     let
+        pixelsToString pixels =
+            (String.fromInt <| round <| Pixels.inPixels pixels) ++ "px"
+
         paperRatio =
             Size.aspectRatio <| model.paper model.orientation
 
+        topAppBarSize =
+            Pixels.pixels 64
+
+        canvasSize =
+            let
+                shrinkRatio =
+                    0.8
+
+                sizeWithoutTopAppBar =
+                    Size.height model.view |> Quantity.minus topAppBarSize
+            in
+            model.view
+                |> Size.setHeight sizeWithoutTopAppBar
+                |> Debug.log "Pre-scaled"
+                |> Size.scale shrinkRatio
+                |> Debug.log "Scaled"
+                |> Size.shrinkToAspectRatio paperRatio
+                |> Debug.log "Conformed to aspect ratio"
+
+        heightAdjust =
+            Size.height model.view
+                |> Quantity.minus (Size.height canvasSize)
+                |> Quantity.plus topAppBarSize
+                |> Quantity.half
+
         svg =
             TypedSvg.svg
-                [ TypedSvg.Attributes.viewBox 0 0
+                [ TypedSvg.Attributes.viewBox 0 0 (AspectRatio.x paperRatio) (AspectRatio.y paperRatio)
                 , Html.Attributes.style "width" "100%"
                 , Html.Attributes.style "height" "100%"
                 ]
                 model.picture
 
-        conversion =
-            case model.unit of
-                Millimeters ->
-                    TypedSvg.Types.mm << Length.inMillimeters
-
-                Centimeters ->
-                    TypedSvg.Types.cm << Length.inCentimeters
-
-                Inches ->
-                    TypedSvg.Types.inch << Length.inInches
-
         export =
+            let
+                conversion =
+                    case model.unit of
+                        Millimeters ->
+                            TypedSvg.Types.mm << Length.inMillimeters
+
+                        Centimeters ->
+                            TypedSvg.Types.cm << Length.inCentimeters
+
+                        Inches ->
+                            TypedSvg.Types.inch << Length.inInches
+            in
             TypedSvg.svg
                 [ TypedSvg.Attributes.viewBox 0 0 (AspectRatio.x paperRatio) (AspectRatio.y paperRatio)
                 , Html.Attributes.style "display" "none"
@@ -371,15 +403,16 @@ canvas model =
                 ]
                 model.picture
     in
-    Html.div [ TopAppBar.fixedAdjust ]
+    Html.div
+        [ Html.Attributes.style "margin" "auto"
+        , Html.Attributes.style "padding-top" <| pixelsToString <| heightAdjust
+        , Html.Attributes.style "width" <| pixelsToString <| Size.width canvasSize
+        , Html.Attributes.style "height" <| pixelsToString <| Size.height canvasSize
+        ]
         [ Html.div
-            [ Html.Attributes.style "width" "60%"
-            , Html.Attributes.style "height" "60%"
-            , Html.Attributes.style "margin" "auto"
+            [ Material.Elevation.z24
             ]
-            [ svg ]
-        , Html.div
-            [ Html.Attributes.id "canvas"
+            [ svg
+            , export
             ]
-            [ export ]
         ]

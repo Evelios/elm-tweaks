@@ -63,8 +63,8 @@ drawing ratio =
         background =
             Random.constant <|
                 TypedSvg.rect
-                    [ Attr.width <| Num ratio.x
-                    , Attr.height <| Num ratio.y
+                    [ Attr.width <| Num <| AspectRatio.x ratio
+                    , Attr.height <| Num <| AspectRatio.y ratio
                     , Attr.fill <| Types.Paint b
                     ]
                     []
