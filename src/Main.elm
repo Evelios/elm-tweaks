@@ -224,8 +224,8 @@ view model =
             ]
             [ topBar model
             , canvas model
-            , fab
             ]
+        , fab
         ]
 
 
