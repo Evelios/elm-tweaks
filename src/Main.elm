@@ -4,7 +4,6 @@ import AspectRatio exposing (AspectRatio)
 import Browser
 import Browser.Dom
 import Browser.Events
-import Debug
 import Dict
 import File.Download as Download
 import Gui
@@ -364,11 +363,8 @@ canvas model =
             in
             model.view
                 |> Size.setHeight sizeWithoutTopAppBar
-                |> Debug.log "Pre-scaled"
                 |> Size.scale shrinkRatio
-                |> Debug.log "Scaled"
                 |> Size.shrinkToAspectRatio paperRatio
-                |> Debug.log "Conformed to aspect ratio"
 
         heightAdjust =
             Size.height model.view
