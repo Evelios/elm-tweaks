@@ -170,10 +170,12 @@ update msg model =
                     ( { model | inputHeight = textHeight }, Cmd.none )
 
         NewPaperSize size ->
-            ( { model | paper = size }, Cmd.none )
+            { model | paper = size }
+                |> update NewPicture
 
         NewOrientation orientation ->
-            ( { model | orientation = orientation }, Cmd.none )
+            { model | orientation = orientation }
+                |> update NewPicture
 
         ShowSettings ->
             ( { model | showSettings = not model.showSettings }, Cmd.none )
