@@ -344,7 +344,7 @@ canvas : Model -> Html Msg
 canvas model =
     let
         pixelsToString pixels =
-            (String.fromInt <| round <| Pixels.inPixels pixels) ++ "px"
+            (String.fromFloat <| Pixels.inPixels pixels) ++ "px"
 
         paperRatio =
             Size.aspectRatio <| model.paper model.orientation
@@ -411,6 +411,8 @@ canvas model =
         ]
         [ Html.div
             [ Material.Elevation.z24
+            , Html.Attributes.style "width" "100%"
+            , Html.Attributes.style "height" "100%"
             ]
             [ svg
             , export
