@@ -19,7 +19,8 @@
             "elm-community/typed-svg": "6.0.0",
             "ianmackenzie/elm-geometry": "3.6.0",
             "ianmackenzie/elm-geometry-svg": "3.0.0",
-            "ianmackenzie/elm-units": "2.5.0"
+            "ianmackenzie/elm-units": "2.5.0",
+            "timjs/elm-collage": "2.0.2"
         },
         "indirect": {
             "elm/bytes": "1.0.8",
@@ -27,6 +28,7 @@
             "elm/time": "1.0.0",
             "elm/url": "1.0.0",
             "elm/virtual-dom": "1.0.2",
+            "elm-community/basics-extra": "4.1.0",
             "ianmackenzie/elm-1d-parameter": "1.0.1",
             "ianmackenzie/elm-float-extra": "1.1.0",
             "ianmackenzie/elm-interval": "2.0.0",

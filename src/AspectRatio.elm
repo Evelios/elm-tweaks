@@ -99,15 +99,15 @@ yNormalizedBelowOne (AspectRatio xVal yVal) =
     yVal / max xVal yVal
 
 
-{-| Alias for xNormalizedBelowOne
+{-| Alias for xNormalizedAboveOne
 -}
 x : AspectRatio -> Float
 x =
-    xNormalizedBelowOne
+    xNormalizedAboveOne
 
 
-{-| Alias for yNormalizedBelowOne
+{-| Alias for yNormalizedAboveOne
 -}
 y : AspectRatio -> Float
 y =
-    yNormalizedBelowOne
+    yNormalizedAboveOne

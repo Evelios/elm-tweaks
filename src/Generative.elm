@@ -1,9 +1,11 @@
-port module Generative exposing (Model, Msg, random)
+port module Generative exposing (Model, Msg, random, static)
 
 import AspectRatio exposing (AspectRatio)
 import Browser
 import Browser.Dom
 import Browser.Events
+import Collage exposing (Collage)
+import Collage.Render
 import Dict
 import File.Download as Download
 import Gui
@@ -22,9 +24,7 @@ import Pixels exposing (Pixels)
 import Quantity
 import Random exposing (Generator)
 import Size exposing (Size)
-import Svg exposing (Svg)
 import Task
-import TypedSvg
 import TypedSvg.Attributes
 import TypedSvg.Types
 
@@ -43,9 +43,9 @@ type alias Model =
     , inputHeight : String
     , fileName : String
     , showSettings : Bool
-    , picture : List (Svg Msg)
+    , picture : Collage Msg
     , unit : Unit
-    , pictureGenerator : AspectRatio -> Generator (List (Svg Msg))
+    , pictureGenerator : AspectRatio -> Generator (Collage Msg)
     }
 
 
@@ -60,7 +60,7 @@ type Msg
     | NewPaperSize (Orientation -> Size Meters)
     | NewOrientation Orientation
     | ShowSettings
-    | GotPicture (List (Svg Msg))
+    | GotPicture (Collage Msg)
     | NewPicture
     | NewUnit Unit
 
@@ -71,7 +71,12 @@ type Unit
     | Inches
 
 
-random : (AspectRatio -> Generator (List (Svg Msg))) -> Program () Model Msg
+static : (AspectRatio -> Collage Msg) -> Program () Model Msg
+static picture =
+    random <| Random.constant << picture
+
+
+random : (AspectRatio -> Generator (Collage Msg)) -> Program () Model Msg
 random pictureGenerator =
     Browser.element
         { init = init pictureGenerator
@@ -81,7 +86,7 @@ random pictureGenerator =
         }
 
 
-init : (AspectRatio -> Generator (List (Svg Msg))) -> () -> ( Model, Cmd Msg )
+init : (AspectRatio -> Generator (Collage Msg)) -> () -> ( Model, Cmd Msg )
 init pictureGenerator _ =
     let
         model =
@@ -92,7 +97,7 @@ init pictureGenerator _ =
             , inputHeight = "0"
             , fileName = "canvas"
             , showSettings = False
-            , picture = []
+            , picture = Collage.rectangle 0 0 |> Collage.filled Collage.transparent
             , unit = Millimeters
             , pictureGenerator = pictureGenerator
             }
@@ -373,12 +378,16 @@ canvas model =
                 |> Quantity.plus topAppBarSize
                 |> Quantity.half
 
-        svg =
-            TypedSvg.svg
-                [ TypedSvg.Attributes.viewBox 0 0 (AspectRatio.x paperRatio) (AspectRatio.y paperRatio)
-                , Html.Attributes.style "width" "100%"
-                , Html.Attributes.style "height" "100%"
-                ]
+        collageHtml =
+            let
+                maxX =
+                    AspectRatio.x paperRatio
+
+                maxY =
+                    AspectRatio.y paperRatio
+            in
+            Collage.Render.svgExplicit
+                [ TypedSvg.Attributes.viewBox -maxX -maxY (2 * maxX) (2 * maxY) ]
                 model.picture
 
         export =
@@ -393,10 +402,17 @@ canvas model =
 
                         Inches ->
                             TypedSvg.Types.inch << Length.inInches
+
+                maxX =
+                    AspectRatio.x paperRatio
+
+                maxY =
+                    AspectRatio.y paperRatio
             in
-            TypedSvg.svg
-                [ TypedSvg.Attributes.viewBox 0 0 (AspectRatio.x paperRatio) (AspectRatio.y paperRatio)
+            Collage.Render.svgExplicit
+                [ TypedSvg.Attributes.viewBox -maxX -maxY (2 * maxX) (2 * maxY)
                 , Html.Attributes.style "display" "none"
+                , Html.Attributes.id "canvas"
                 , TypedSvg.Attributes.height <| conversion <| Size.height (model.paper model.orientation)
                 , TypedSvg.Attributes.width <| conversion <| Size.width (model.paper model.orientation)
                 ]
@@ -413,7 +429,7 @@ canvas model =
             , Html.Attributes.style "width" "100%"
             , Html.Attributes.style "height" "100%"
             ]
-            [ svg
+            [ collageHtml
             , export
             ]
         ]

@@ -19,14 +19,14 @@
   <body>
     <div id="elm"></div>
     <script>
-    var app = Elm.Main.init({
-        node: document.getElementById('elm')
-    });
+      var app = Elm.Main.init({
+          node: document.getElementById('elm')
+      });
 
-    app.ports.getSvg.subscribe(function(id) {
-        var node = document.getElementById(id);
-        app.ports.gotSvg.send(node.innerHTML);
-    });
+      app.ports.getSvg.subscribe(function(id) {
+          var node = document.getElementById(id);
+          app.ports.gotSvg.send(node.outerHTML);
+      });
     </script>
   </body>
 

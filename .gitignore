@@ -1,12 +1,15 @@
-# Elm Stuff
+# Elm
 elm-stuff/
-*.js
 
-# JS Stuff
+# JS
+*.js
 node_modules/
 package-lock.json
 
-# User Stuff
+# Editor
+.idea/
+
+# User
 icons/
 todo.md
 *.vim
